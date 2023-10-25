@@ -1,0 +1,23 @@
+VariantDir('obj', 'src', duplicate = 0)
+env = Environment(
+  tools = ['mingw'],
+  CXXFLAGS = ['-g', '-std=c++17'],
+  CPPPATH = ['./lib/raylib/include','./include'],
+  LIBPATH = ['./lib/raylib/lib'],
+  LIBS = [ \
+    'raylib' \
+    #,'glfw3' \
+    ,'opengl32' \
+    ,'gdi32' \
+    #,'openal32' \
+    ,'winmm' \
+  ]
+)
+files = Glob('obj/*.cpp')
+
+
+
+env.Program( \
+    './bin/game.exe' ,
+    files
+)
