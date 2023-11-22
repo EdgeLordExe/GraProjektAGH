@@ -59,13 +59,16 @@ void EntityId::RemoveComponent(uint64_t compid){
 /// ECS
 
 void ECS::Init(){
-    IncrementComponentStore(2);
+    DEBG("i1")
+    IncrementComponentStore(3);
+    DEBG("i2")
     InsertSystem(new DrawSystem());
-
+    DEBG("i3")
     EntityBuilder().AddComponent(new DrawComponent("assets/textures/player.png"))
                    .AddComponent(new PositionComponent(50,50))
-                   .AddComponent(new PlayerComponent)
+                   .AddComponent(new PlayerComponent())
                    .Build();
+    DEBG("i5")
 }
 
 /*

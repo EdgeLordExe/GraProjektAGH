@@ -1,6 +1,7 @@
 #ifndef HPP_ENTITY
 #define HPP_ENTITY
 
+#define DEBG(x) std::cout << x << std::endl;
 #include <stdint.h>
 #include <vector>
 #include <iostream>
