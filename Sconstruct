@@ -18,6 +18,6 @@ files = Glob('obj/*.cpp')
 
 
 env.Program( \
-    './bin/game.exe' ,
+    './bin/gra_agh.exe' ,
     files
 )
