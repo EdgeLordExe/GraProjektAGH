@@ -3,7 +3,8 @@
 #include <iostream>
 
 #include "entity.hpp"
-#include "drawable.hpp"
+#include "components.hpp"
+#include "entity_builder.hpp"
 
 #define FLAG2NUM(x)((uint64_t)floor(log2((double) x )))
 
@@ -56,19 +57,22 @@ void EntityId::RemoveComponent(uint64_t compid){
 
 
 /// ECS
+
+void ECS::Init(){
+    IncrementComponentStore(2);
+    InsertSystem(new DrawSystem());
+
+    EntityBuilder().AddComponent(new DrawComponent("assets/textures/player.png"))
+                   .AddComponent(new PositionComponent(50,50))
+                   .AddComponent(new PlayerComponent)
+                   .Build();
+}
+
 /*
     Ta funkcja jest bardzo niebezpieczna, NIGDY nie powinienes zachowywac dlugotrwales kopii wskaznika do Entity
     Jezeli dany obieky zostanie usuniety to wtedy ten pointer będzie nie wazny. To jest tylko do tymczasowego odzyskania jakis danych.
 
 */
-void ECS::Init(){
-    IncrementComponentStore(2);
-    InsertSystem(new DrawSystem());
-    auto e = MakeEntity();
-    e.AddComponent(new DrawComponent("assets/textures/player.png"));
-    e.AddComponent(new PositionComponent(50,50));
-}
-
 Entity* ECS::GetEntity(EntityId id){
     return &entities[id.id];
 }

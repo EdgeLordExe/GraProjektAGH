@@ -1,5 +1,7 @@
-#include "drawable.hpp"
-
+#include "components.hpp"
+PlayerComponent::PlayerComponent() {
+   component_id = COMP_PLAYER;
+}
 
 DrawComponent::DrawComponent( std::string path) {
    component_id = COMP_DRAWABLE;

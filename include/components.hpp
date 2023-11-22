@@ -2,7 +2,13 @@
 #define HPP_SYSTEMS
 
 #include <raylib.h>
+#include <unordered_map>
 #include "entity.hpp"
+
+class PlayerComponent : public Component{
+    public:
+        PlayerComponent();
+};
 
 class PositionComponent : public Component{
 public:
@@ -17,7 +23,7 @@ public:
 class DrawComponent : public Component{
 public:
     DrawComponent( std::string path);
-    virtual ~DrawComponent() override {};
+    virtual ~DrawComponent() override;
     virtual void ParseSignal(std::string signal, std::vector<std::any> values) override {};
 
     Texture2D text;
@@ -25,6 +31,20 @@ public:
 
 class DrawSystem : public System{
     virtual void Run() override;
+};
+
+class InspectComponent : public Component{
+    InspectComponent(std::unordered_map<std::string,std::string> properties){
+        component_id = COMP_INSPECT;
+    }
+
+    std::string GetProperty(std::string key){
+        return internal.count(key) == 1 ? internal[key] : "";
+    }
+
+    private: 
+    std::unordered_map<std::string,std::string> internal;
+
 };
 
 

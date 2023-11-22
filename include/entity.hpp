@@ -12,8 +12,10 @@ typedef uint64_t entityId;
 
 #define FL_DELETED (1 << 0)
 
-#define COMP_DRAWABLE (1 << 0)
-#define COMP_POSITION (1 << 1)
+#define COMP_DRAWABLE   (1 << 0)
+#define COMP_POSITION   (1 << 1)
+#define COMP_PLAYER     (1 << 2)
+#define COMP_INSPECT     (1 << 3)
 
 class Component
 {
@@ -30,13 +32,12 @@ protected:
 };
 
 class System{
-    public: 
-        System(){};
-        virtual ~System(){};
+public: 
+    System(){};
+    virtual ~System(){};
 
-        virtual void Run(){};
+    virtual void Run(){};
 
-        
 };
 
 struct EntityId{
