@@ -1,7 +1,7 @@
 VariantDir('obj', 'src', duplicate = 0)
 env = Environment(
   tools = ['mingw'],
-  CXXFLAGS = ['-g', '-std=c++17'],
+  CXXFLAGS = ['-g', '-std=c++20'],
   CPPPATH = ['./lib/raylib/include','./include'],
   LIBPATH = ['./lib/raylib/lib'],
   LIBS = [ \

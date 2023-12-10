@@ -1,15 +1,19 @@
+#include <algorithm>
+
 #include "components.hpp"
+
 PlayerComponent::PlayerComponent() {
-   component_id = COMP_PLAYER;
+    component_id = COMP_PLAYER;
+    cam = {0};
+    cam.offset = {SCREEN_WIDTH / 2.0f, SCREEN_HEIGHT / 2.0f};
+    cam.target = {0,0};
+    cam.rotation = 0.0f;
+    cam.zoom = 2.0f;
 }
 
 DrawComponent::DrawComponent( std::string path) {
    component_id = COMP_DRAWABLE;
-   text = LoadTexture(path.c_str());
-}
-
-DrawComponent::~DrawComponent(){
-    UnloadTexture(text);
+   text = TextureStore::instance()->LoadTextureWithPath(path);
 }
 
 PositionComponent::PositionComponent(uint64_t xpos, uint64_t ypos){
@@ -19,17 +23,98 @@ PositionComponent::PositionComponent(uint64_t xpos, uint64_t ypos){
 }
 
 void DrawSystem::Run(){
-    BeginDrawing();
-    ClearBackground(WHITE);
     ECS* ecs = ECS::instance();
+    TextureStore* txt = TextureStore::instance();
     auto queried = ecs->Query(COMP_DRAWABLE | COMP_POSITION);
     if(!queried.size()){
         return;
     }
+    auto qplayer = ecs->Query(COMP_PLAYER);
+
+    if(qplayer.size() != 1){
+        return;
+    }
+
+    auto player = qplayer[0];
+    auto* player_comp = static_cast<PlayerComponent*>( player.GetComponent(COMP_PLAYER));
+
+
+    BeginDrawing();
+    ClearBackground(WHITE);
+    BeginMode2D(player_comp->cam);
+    for(int x = 0; x < ecs->tilemap->w; x ++){
+        for(int y = 0; y < ecs->tilemap->h; y ++){
+            tileId tile = ecs->tilemap->GetTile(x,y);
+            textureId texture = ecs->tilemap->GetTileDefinition(tile).textId;
+            DrawTexture(txt->GetTexture(texture),x*32,y*32,WHITE);
+        }
+    }
+
     for(auto entityId : queried){
         DrawComponent* drawable = static_cast<DrawComponent*>( entityId.GetComponent(COMP_DRAWABLE));
         PositionComponent* position = static_cast<PositionComponent*>( entityId.GetComponent(COMP_POSITION));
-        DrawTexture(drawable->text, position->x ,position->y , WHITE);
+        DrawTexture(txt->GetTexture(drawable->text), position->x ,position->y , WHITE);
     }
+    EndMode2D();
+    ecs->console->Draw();
+    //Miejsce na UI
+
     EndDrawing();
+}
+
+void PlayerSystem::Run(){
+    ECS* ecs = ECS::instance();
+    if(ecs->GetState() != State::PLAY){
+        return;
+    }
+    auto queried = ecs->Query(COMP_PLAYER | COMP_POSITION);
+    //Nie ma gracza!
+    if(!queried.size()){
+        return;
+    }
+    //Jest wiecej niz jeden gracz? tak czy siak to powinno byc nie mozliwe, ale przy duzych projektach niczego nie mozna sie spodziewac
+    if(queried.size() > 1){
+        return;
+    }
+    //Bierzemy EntityId gracza
+    auto entityId = queried[0];
+    //I bierzemy jego pozycje!
+    PositionComponent* position = static_cast<PositionComponent*>( entityId.GetComponent(COMP_POSITION));
+    PlayerComponent* player = static_cast<PlayerComponent*>( entityId.GetComponent(COMP_PLAYER));
+
+    int dh = IsKeyDown(KEY_D) - IsKeyDown(KEY_A);
+    int dv = IsKeyDown(KEY_S) - IsKeyDown(KEY_W);
+
+    // DEBUG
+    if(ecs->tilemap->editing){
+        if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT)){
+            Vector2 coords = GetMousePosition();
+            std::cout << "x :" << coords.x << "y :" << coords.y << std::endl;
+            uint64_t worldx = coords.x/2 + player->cam.target.x - SCREEN_WIDTH/4;
+            uint64_t worldy = coords.y/2 + player->cam.target.y - SCREEN_HEIGHT/4;
+
+            uint64_t tx = worldx/32;
+            uint64_t ty = worldy/32;
+            ecs->tilemap->SetTile(tx,ty,ecs->tilemap->brush);
+        }
+    }
+    //END DEBUG
+
+
+    double ms = player->movement_speed;
+
+    //Tak takie cos dziala w c++, ale tylko dla jednej linijki B )
+    //if(dh != 0 && dv != 0)
+    //    ms *= 0.7; // ~~ 1/sqrt(2)
+
+    position->x += dh * ms ;
+    position->y += dv * ms;
+    std::unique_ptr<Tilemap>& t = ecs->tilemap;
+    position->x = std::clamp(position->x,0.0,(double)(t->w*32) - 32);
+    position->y = std::clamp(position->y,0.0,(double)(t->h*32) - 32);
+    
+    
+    player->cam.target = {  std::clamp((float)position->x + 16, (float)(SCREEN_WIDTH/4), (float)((t->w*32) - SCREEN_WIDTH/4)),
+                            std::clamp((float)position->y + 16, (float)(SCREEN_HEIGHT/4), (float)((t->h*32) - SCREEN_HEIGHT/4))};
+
 }

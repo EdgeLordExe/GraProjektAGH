@@ -4,10 +4,13 @@
 #include <raylib.h>
 #include <unordered_map>
 #include "entity.hpp"
+#include "texture_store.hpp"
 
 class PlayerComponent : public Component{
-    public:
-        PlayerComponent();
+public:
+    PlayerComponent();
+    Camera2D cam;
+    double movement_speed = 6.0;
 };
 
 class PositionComponent : public Component{
@@ -16,21 +19,25 @@ public:
 
     virtual void ParseSignal(std::string signal, std::vector<std::any> values) override {};
 
-    uint64_t x;
-    uint64_t y;
+    double x;
+    double y;
 };
 
 class DrawComponent : public Component{
 public:
     DrawComponent( std::string path);
-    virtual ~DrawComponent() override;
     virtual void ParseSignal(std::string signal, std::vector<std::any> values) override {};
 
-    Texture2D text;
+    textureId text;
 };
 
 class DrawSystem : public System{
     virtual void Run() override;
+};
+
+class PlayerSystem : public System{
+    virtual void Run() override;
+
 };
 
 class InspectComponent : public Component{
@@ -46,6 +53,7 @@ class InspectComponent : public Component{
     std::unordered_map<std::string,std::string> internal;
 
 };
+
 
 
 #endif

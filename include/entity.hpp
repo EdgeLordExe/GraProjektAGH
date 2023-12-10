@@ -2,14 +2,27 @@
 #define HPP_ENTITY
 
 #define DEBG(x) std::cout << x << std::endl;
-#include <stdint.h>
+
+#define SCREEN_WIDTH 1280
+#define SCREEN_HEIGHT 720
+
+#include <cstdint>
 #include <vector>
 #include <iostream>
 #include <memory>
 #include <string>
 #include <any>
 
+#include "tilemap.hpp"
+#include "console.hpp"
+
 typedef uint64_t entityId;
+
+enum State{
+    PLAY,
+    CONSOLE
+};
+
 
 #define FL_DELETED (1 << 0)
 
@@ -109,14 +122,27 @@ class ECS{
             }
         }
 
-         std::vector<std::vector<std::unique_ptr<Component>>> component_store;
+        std::vector<std::vector<std::unique_ptr<Component>>> component_store;
+
+        std::unique_ptr<Tilemap> tilemap;
+        std::unique_ptr<Console> console;
+
+        void SwitchState(State newstate){
+            gamestate = newstate;
+        };
+
+        State GetState(){
+            return gamestate;
+        }
+        
+        
     private: 
 
         ECS(){};
         static ECS* self;
 
+        State gamestate;
 
-       
         std::vector<EntityId> mrkd_for_del;
         std::vector<Entity> entities;
         std::vector<std::unique_ptr<System>> systems;

@@ -3,12 +3,15 @@
 #include "raylib.h"
 
 #include "entity.hpp"
+#include "texture_store.hpp"
 
 ECS* ECS::self = NULL;
+TextureStore* TextureStore::self = NULL;
+
 int main(){
    
 
-    InitWindow(640, 480, "raylib");
+    InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "gra");
 
     ECS* world = ECS::instance();
 

@@ -58,6 +58,9 @@
         "xloctime": "cpp",
         "list": "cpp",
         "unordered_map": "cpp",
-        "xhash": "cpp"
+        "xhash": "cpp",
+        "algorithm": "cpp",
+        "optional": "cpp",
+        "fstream": "cpp"
     }
 }

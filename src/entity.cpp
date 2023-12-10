@@ -8,6 +8,7 @@
 
 #define FLAG2NUM(x)((uint64_t)floor(log2((double) x )))
 
+
 Component::Component(){}
 
 Component::~Component(){}
@@ -59,16 +60,22 @@ void EntityId::RemoveComponent(uint64_t compid){
 /// ECS
 
 void ECS::Init(){
-    DEBG("i1")
+    tilemap = std::make_unique<Tilemap>("assets/tilemaps/t1.txt");
+    console = std::make_unique<Console>();
+    //tilemap->InsertTileDefinition(TileDefinition(TextureStore::instance()->LoadTextureWithPath("assets/textures/t1.png")));
+
     IncrementComponentStore(3);
-    DEBG("i2")
+
+    InsertSystem(new PlayerSystem());
+
+    //TO MUSI BYC ZAWSZE OSTATNIE ZAUFAJCIE MI
     InsertSystem(new DrawSystem());
-    DEBG("i3")
+
     EntityBuilder().AddComponent(new DrawComponent("assets/textures/player.png"))
                    .AddComponent(new PositionComponent(50,50))
                    .AddComponent(new PlayerComponent())
                    .Build();
-    DEBG("i5")
+
 }
 
 /*
