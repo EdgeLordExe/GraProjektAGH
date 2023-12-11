@@ -7,12 +7,21 @@
 
 typedef uint64_t tileId;
 
+#define TOP (1 << 0)
+#define RIGHT (1 << 1)
+#define BOTTOM (1 << 2)
+#define LEFT (1 << 3)
+
+
 struct TileDefinition{
     tileId tileId;
     textureId textId;
 
     bool collision = false;
 
+    bool autotile = false;
+
+    TileDefinition(textureId tid, bool col, bool autot);
     TileDefinition(textureId tid, bool col);
     TileDefinition(textureId tid);
 };
@@ -25,6 +34,7 @@ public:
     tileId InsertTileDefinition(TileDefinition td);
 
     std::vector<tileId> tiles;
+    std::vector<char> autotiles_bitmap;
     uint64_t w, h;
     
     tileId brush;
@@ -35,6 +45,10 @@ public:
     tileId GetTile(uint64_t x, uint64_t y);
 
     void SetTile(uint64_t x, uint64_t y,tileId id);
+
+    void SetAutotileBitmap(uint64_t x, uint64_t y, char value);
+
+    char GetAutotileBitmap(uint64_t x, uint64_t y);
 
     TileDefinition GetTileDefinition(tileId id);
 

@@ -113,12 +113,14 @@ void Console::ParseCommand(){
     }
 
     if(parts[0] == "tdadd"){
-        if(parts.size() != 3){
-            history.push_back("ERROR: Wrong amount of commands passed into the console, use tdadd like: tdadd <sprite-path> <collision>");
+        if(parts.size() != 4){
+            history.push_back("ERROR: Wrong amount of commands passed into the console, use tdadd like: tdadd <sprite-path> <collision> <autotile>");
             return;
         }
         std::string path = parts[1];
         std::string scollision = parts[2];
+        std::string sautotile = parts[3];
+
         bool collision;
         if(scollision == "1"){
             collision = true;
@@ -128,9 +130,18 @@ void Console::ParseCommand(){
             history.push_back("ERROR: expected 1 or 0");
             return;
         }
+        bool autotile;
+        if(sautotile == "1"){
+            autotile = true;
+        }else if(sautotile == "0"){
+            autotile = false;
+        } else {
+            history.push_back("ERROR: expected 1 or 0");
+            return;
+        }
         ECS* ecs = ECS::instance();
         TextureStore* txt = TextureStore::instance();
-        tileId id = ecs->tilemap->InsertTileDefinition(TileDefinition(txt->LoadTextureWithPath(path),collision));
+        tileId id = ecs->tilemap->InsertTileDefinition(TileDefinition(txt->LoadTextureWithPath(path),collision,autotile));
         history.push_back(std::format("Successfully inserted tile with id: {}",id));
     }
 }

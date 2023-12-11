@@ -48,7 +48,14 @@ void DrawSystem::Run(){
             tileId tile = ecs->tilemap->GetTile(x,y);
             TileDefinition td = ecs->tilemap->GetTileDefinition(tile);
             textureId texture = td.textId;
-            DrawTexture(txt->GetTexture(texture),x*32,y*32,WHITE);
+            if(!td.autotile){
+                DrawTexture(txt->GetTexture(texture),x*32,y*32,WHITE);
+            } else {
+                Rectangle r = {ecs->tilemap->GetAutotileBitmap(x,y) * 32, 0 , 32 , 32};
+                Vector2 v = {(float)x*32,(float)y*32};
+                DrawTextureRec(txt->GetTexture(texture),r,v,WHITE);
+            }
+            
             //if(td.collision){
             //    DrawRectangle(x*32,y*32,32,32,RED);
             //}
