@@ -16,10 +16,11 @@ DrawComponent::DrawComponent( std::string path) {
    text = TextureStore::instance()->LoadTextureWithPath(path);
 }
 
-PositionComponent::PositionComponent(uint64_t xpos, uint64_t ypos){
+PositionComponent::PositionComponent(uint64_t xpos, uint64_t ypos, int collider_width, int collider_height){
     component_id = COMP_POSITION;
     x = xpos;
     y = ypos;
+    collision_box = {(float)x,(float)y,(float)collider_width,(float)collider_height};
 }
 
 void DrawSystem::Run(){
@@ -45,16 +46,22 @@ void DrawSystem::Run(){
     for(int x = 0; x < ecs->tilemap->w; x ++){
         for(int y = 0; y < ecs->tilemap->h; y ++){
             tileId tile = ecs->tilemap->GetTile(x,y);
-            textureId texture = ecs->tilemap->GetTileDefinition(tile).textId;
+            TileDefinition td = ecs->tilemap->GetTileDefinition(tile);
+            textureId texture = td.textId;
             DrawTexture(txt->GetTexture(texture),x*32,y*32,WHITE);
+            //if(td.collision){
+            //    DrawRectangle(x*32,y*32,32,32,RED);
+            //}
         }
     }
 
     for(auto entityId : queried){
         DrawComponent* drawable = static_cast<DrawComponent*>( entityId.GetComponent(COMP_DRAWABLE));
         PositionComponent* position = static_cast<PositionComponent*>( entityId.GetComponent(COMP_POSITION));
-        DrawTexture(txt->GetTexture(drawable->text), position->x ,position->y , WHITE);
+        DrawTexture(txt->GetTexture(drawable->text), position->x -16,position->y -16, WHITE);
+        //DrawRectangle(position->collision_box.x,position->collision_box.y,position->collision_box.width,position->collision_box.height,RED);
     }
+    
     EndMode2D();
     ecs->console->Draw();
     //Miejsce na UI
@@ -107,13 +114,58 @@ void PlayerSystem::Run(){
     //if(dh != 0 && dv != 0)
     //    ms *= 0.7; // ~~ 1/sqrt(2)
 
-    position->x += dh * ms ;
-    position->y += dv * ms;
+    int tilex = position->x /32;
+    int tiley = position->y /32;
+
+    std::vector<Rectangle> tile_collisions;
     std::unique_ptr<Tilemap>& t = ecs->tilemap;
+    for(int i = -1; i <= 1; i ++){
+        for(int k = -1 ; k <= 1; k ++){
+            if((tilex + i < 0) || (tiley + k < 0) || (tilex + i >= t->w) || (tiley +k >= t->h)){
+                continue;
+            }
+
+            TileDefinition td = t->GetTileDefinition(t->GetTile(tilex + i, tiley + k));
+            Rectangle r;
+            if(td.collision){
+                r.x = (tilex + i) * 32;
+                r.y = (tiley + k) * 32;
+                r.width = 32;
+                r.height = 32;
+                tile_collisions.push_back(r);
+            } 
+        }
+    }
+    int oldposx = position->x;
+    int oldposy = position->y;
+
+    Rectangle collision = position->collision_box;
+    collision.x += dh * ms;
+    collision.y += dv * ms;
+    for(Rectangle r : tile_collisions){
+        if( r.x < collision.x + collision.width &&
+            r.x + r.width > collision.x && 
+            r.y < position->collision_box.y + position->collision_box.height &&
+            r.y + r.height > position->collision_box.y) {
+                dh = 0;
+            }
+        if(r.x < position->collision_box.x + position->collision_box.width &&
+            r.x + r.width > position->collision_box.x && 
+            r.y < collision.y + collision.height &&
+            r.y + r.height > collision.y){
+                dv = 0;
+            }
+    }
+    position->x += dh*ms;
+    
+    position->y += dv*ms;
+
+    position->collision_box.x = position->x - position->collision_box.width/2;
+    position->collision_box.y = position->y - position->collision_box.height/2;
+
     position->x = std::clamp(position->x,0.0,(double)(t->w*32) - 32);
     position->y = std::clamp(position->y,0.0,(double)(t->h*32) - 32);
-    
-    
+
     player->cam.target = {  std::clamp((float)position->x + 16, (float)(SCREEN_WIDTH/4), (float)((t->w*32) - SCREEN_WIDTH/4)),
                             std::clamp((float)position->y + 16, (float)(SCREEN_HEIGHT/4), (float)((t->h*32) - SCREEN_HEIGHT/4))};
 

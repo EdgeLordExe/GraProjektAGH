@@ -1,10 +1,12 @@
 128
 128
-2
+3
 assets/textures/t1.png
 0
 assets/textures/t2.png
 0
+assets/textures/wall.png
+1
 0
 0
 0
@@ -910,7 +912,7 @@ assets/textures/t2.png
 0
 0
 0
-0
+2
 0
 0
 0

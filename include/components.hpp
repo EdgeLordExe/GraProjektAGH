@@ -15,12 +15,13 @@ public:
 
 class PositionComponent : public Component{
 public:
-    PositionComponent(uint64_t xpos, uint64_t ypos);
+    PositionComponent(uint64_t xpos, uint64_t ypos,int collider_width, int collider_height);
 
     virtual void ParseSignal(std::string signal, std::vector<std::any> values) override {};
 
     double x;
     double y;
+    Rectangle collision_box;
 };
 
 class DrawComponent : public Component{

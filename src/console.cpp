@@ -35,7 +35,7 @@ void Console::Draw(){
     } else if(key == KEY_BACKSPACE && current_command.length() > 0){
         current_command.pop_back();
     } else if((key >= 32) && (key <= 125)){
-        current_command.push_back((char)key);
+        current_command.push_back((char)std::tolower(key));
     }
 
 
@@ -61,7 +61,7 @@ void Console::ParseCommand(){
     for(auto part : parts){
         std::cout << part << std::endl;
     }
-    if(parts[0] == "TMLOAD"){
+    if(parts[0] == "tmload"){
         if(parts.size() != 2){
             history.push_back("ERROR: Wrong amount of commands passed into the console, use tmload like: tmload <filepath>");
             return;
@@ -72,7 +72,7 @@ void Console::ParseCommand(){
         return;
     }
 
-    if(parts[0] == "TMSAVE"){
+    if(parts[0] == "tmsave"){
         if(parts.size() != 2){
             history.push_back("ERROR: Wrong amount of commands passed into the console, use tmsave like: tmsave <filepath>");
             return;
@@ -83,7 +83,7 @@ void Console::ParseCommand(){
         return;
     }
     
-    if(parts[0] == "HELP"){
+    if(parts[0] == "help"){
         if(parts.size() != 1){
             history.push_back("ERROR: Wrong amount of commands passed into the console, use help like: help");
             return;
@@ -92,9 +92,10 @@ void Console::ParseCommand(){
         history.push_back("TMSAVE   - saves a tilemap into a file: TMSAVE <filename>");
         history.push_back("TMLOAD   - loads a tilemap from a file: TMLOAD <filename>");
         history.push_back("TMEDIT   - allows you to edit the tilemao");
+        history.push_back("TDADD - adds new tile definition: TDADD <texture path> <collision>");
     }
 
-    if(parts[0] == "TMEDIT"){
+    if(parts[0] == "tmedit"){
         if(parts.size() > 2){
             history.push_back("ERROR: Wrong amount of commands passed into the console, use tmedit like: tmedit <tileid>");
             return;
@@ -111,7 +112,7 @@ void Console::ParseCommand(){
         ecs->tilemap->brush = id;
     }
 
-    if(parts[0] == "TDADD"){
+    if(parts[0] == "tdadd"){
         if(parts.size() != 3){
             history.push_back("ERROR: Wrong amount of commands passed into the console, use tdadd like: tdadd <sprite-path> <collision>");
             return;

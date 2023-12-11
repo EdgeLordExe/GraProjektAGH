@@ -72,7 +72,7 @@ void ECS::Init(){
     InsertSystem(new DrawSystem());
 
     EntityBuilder().AddComponent(new DrawComponent("assets/textures/player.png"))
-                   .AddComponent(new PositionComponent(50,50))
+                   .AddComponent(new PositionComponent(50,50,8,16))
                    .AddComponent(new PlayerComponent())
                    .Build();
 
