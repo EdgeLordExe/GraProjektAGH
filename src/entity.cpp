@@ -108,6 +108,9 @@ void ECS::DelEntity(EntityId eid){
 }
 
 void ECS::DeleteMarkedEntities(){
+    if(!mrkd_for_del.size()){
+        return;
+    }
     for(auto& eid : mrkd_for_del){
         if(!eid.IsValid()){
             continue;
@@ -117,16 +120,26 @@ void ECS::DeleteMarkedEntities(){
         new_entity.id = eid.id;
         new_entity.gen = eid.gen + 1;
         entities[eid.id] = new_entity;
+        free_ids.push_back(eid.id);
     }
     mrkd_for_del.clear();
 }
 
 EntityId ECS::MakeEntity(){
-    Entity entity;
-    entity.id = entities.size();
-    entities.push_back(entity);
-    for(auto& comp_vec : component_store){
-        comp_vec.emplace_back(std::unique_ptr<Component>(nullptr));
+    if(!free_ids.size()){
+        Entity entity;
+        entity.id = entities.size();
+        entities.push_back(entity);
+        for(auto& comp_vec : component_store){
+            comp_vec.emplace_back(std::unique_ptr<Component>(nullptr));
+        }
+        return entity.getSafeId();
     }
-    return entity.getSafeId();
+    entityId free_id = free_ids.back();
+    free_ids.pop_back();
+    for(auto& comp_vec : component_store){
+        comp_vec[free_id] = std::move(std::unique_ptr<Component>(nullptr));
+    }
+    return entities[free_id].getSafeId();
+
 }

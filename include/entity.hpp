@@ -145,6 +145,7 @@ class ECS{
 
         std::vector<EntityId> mrkd_for_del;
         std::vector<Entity> entities;
+        std::vector<entityId> free_ids;
         std::vector<std::unique_ptr<System>> systems;
        
 

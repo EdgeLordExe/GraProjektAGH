@@ -10,7 +10,16 @@ class PlayerComponent : public Component{
 public:
     PlayerComponent();
     Camera2D cam;
-    double movement_speed = 6.0;
+    double movement_speed = 3.0;
+    double sprint_speed = 6.0;
+
+    int max_health = 10;
+    int current_health = 10;
+
+    float max_stamina = 100;
+    float current_stamina = 100;
+
+    float stamina_regeneration = 0.1;
 };
 
 class PositionComponent : public Component{
