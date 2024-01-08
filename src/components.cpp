@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <cmath>
 
 #include "components.hpp"
 
@@ -12,7 +13,7 @@ PlayerComponent::PlayerComponent() {
 }
 
 OgrComponent::OgrComponent(){
-    component_id = COMP_MONSTER;
+    component_id = COMP_OGR;
 }
 
 DrawComponent::DrawComponent( std::string path) {
@@ -181,4 +182,58 @@ void PlayerSystem::Run(){
     player->cam.target = {  std::clamp((float)position->x + 16, (float)(SCREEN_WIDTH/4), (float)((t->w*32) - SCREEN_WIDTH/4)),
                             std::clamp((float)position->y + 16, (float)(SCREEN_HEIGHT/4), (float)((t->h*32) - SCREEN_HEIGHT/4))};
 
+}
+
+void OgrSystem::Run(){
+    ECS* ecs = ECS::instance();
+    if(ecs->GetState() != State::PLAY){
+        return;
+    }
+    auto queriedPlayer = ecs->Query(COMP_PLAYER | COMP_POSITION);
+    auto queriedOgr = ecs->Query(COMP_OGR | COMP_POSITION);
+    
+    if(!queriedPlayer.size() || !queriedOgr.size()){
+        return;
+    }
+    auto playerEntityId = queriedPlayer[0];
+    auto playerPosition = static_cast<PositionComponent*>(playerEntityId.GetComponent(COMP_POSITION));
+
+    auto ogrEntityId = queriedOgr[0];    
+    PositionComponent* ogrPosition = static_cast<PositionComponent*>( ogrEntityId.GetComponent(COMP_POSITION));
+    OgrComponent* ogr = static_cast<OgrComponent*>( ogrEntityId.GetComponent(COMP_OGR));
+
+    int tilex = ogrPosition->x /32;
+    int tiley = ogrPosition->y /32;
+
+    std::vector<Rectangle> tile_collisions;
+    std::unique_ptr<Tilemap>& t = ecs->tilemap;
+    for(int i = -1; i <= 1; i ++){
+        for(int k = -1 ; k <= 1; k ++){
+            if((tilex + i < 0) || (tiley + k < 0) || (tilex + i >= t->w) || (tiley +k >= t->h)){
+                continue;
+            }
+
+            TileDefinition td = t->GetTileDefinition(t->GetTile(tilex + i, tiley + k));
+            Rectangle r;
+            if(td.collision){
+                r.x = (tilex + i) * 32;
+                r.y = (tiley + k) * 32;
+                r.width = 32;
+                r.height = 32;
+                tile_collisions.push_back(r);
+            } 
+        }
+    }
+
+    Vector2 direction = { playerPosition->x - ogrPosition->x, playerPosition->y - ogrPosition->y };
+    double kat = atan(direction.y/direction.x);
+
+    ogrPosition->x += cos(kat) * ogr->movement_speed;
+    ogrPosition->y += sin(kat) * ogr->movement_speed;
+
+    ogrPosition->collision_box.x = ogrPosition->x - ogrPosition->collision_box.width / 2;
+    ogrPosition->collision_box.y = ogrPosition->y - ogrPosition->collision_box.height / 2;
+
+    ogrPosition->x = std::clamp(ogrPosition->x, 0.0, (double)(ecs->tilemap->w * 32) - 32);
+    ogrPosition->y = std::clamp(ogrPosition->y, 0.0, (double)(ecs->tilemap->h * 32) - 32);
 }

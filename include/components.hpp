@@ -60,6 +60,10 @@ class PlayerSystem : public System{
 
 };
 
+class OgrSystem : public System{
+    virtual void Run() override;
+};
+
 class InspectComponent : public Component{
     InspectComponent(std::unordered_map<std::string,std::string> properties){
         component_id = COMP_INSPECT;
