@@ -76,6 +76,8 @@ void ECS::Init(){
                    .AddComponent(new PlayerComponent())
                    .Build();
 
+    InsertSystem(new OgrSystem());
+
     EntityBuilder().AddComponent(new DrawComponent("assets/textures/ogr.png"))
                    .AddComponent(new PositionComponent(100,100,8,16))
                    .AddComponent(new OgrComponent())

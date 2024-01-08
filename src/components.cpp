@@ -226,7 +226,7 @@ void OgrSystem::Run(){
     }
 
     Vector2 direction = { playerPosition->x - ogrPosition->x, playerPosition->y - ogrPosition->y };
-    double kat = atan(direction.y/direction.x);
+    double kat = atan2(direction.y, direction.x);
 
     ogrPosition->x += cos(kat) * ogr->movement_speed;
     ogrPosition->y += sin(kat) * ogr->movement_speed;
