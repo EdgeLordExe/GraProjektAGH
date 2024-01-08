@@ -22,6 +22,16 @@ public:
     float stamina_regeneration = 0.1;
 };
 
+class OgrComponent : public Component{
+    public:
+    OgrComponent();
+    double movement_speed = 2.0;
+    
+    int max_health = 10;
+    int current_health = 10;
+
+};
+
 class PositionComponent : public Component{
 public:
     PositionComponent(uint64_t xpos, uint64_t ypos,int collider_width, int collider_height);

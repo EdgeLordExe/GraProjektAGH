@@ -11,6 +11,10 @@ PlayerComponent::PlayerComponent() {
     cam.zoom = 2.0f;
 }
 
+OgrComponent::OgrComponent(){
+    component_id = COMP_MONSTER;
+}
+
 DrawComponent::DrawComponent( std::string path) {
    component_id = COMP_DRAWABLE;
    text = TextureStore::instance()->LoadTextureWithPath(path);

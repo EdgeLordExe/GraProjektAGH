@@ -30,6 +30,7 @@ enum State{
 #define COMP_POSITION   (1 << 1)
 #define COMP_PLAYER     (1 << 2)
 #define COMP_INSPECT     (1 << 3)
+#define COMP_MONSTER    (1 << 4)
 
 class Component
 {

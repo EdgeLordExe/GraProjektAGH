@@ -64,7 +64,7 @@ void ECS::Init(){
     console = std::make_unique<Console>();
     //tilemap->InsertTileDefinition(TileDefinition(TextureStore::instance()->LoadTextureWithPath("assets/textures/t1.png")));
 
-    IncrementComponentStore(3);
+    IncrementComponentStore(5);
 
     InsertSystem(new PlayerSystem());
 
@@ -74,6 +74,11 @@ void ECS::Init(){
     EntityBuilder().AddComponent(new DrawComponent("assets/textures/player.png"))
                    .AddComponent(new PositionComponent(50,50,8,16))
                    .AddComponent(new PlayerComponent())
+                   .Build();
+
+    EntityBuilder().AddComponent(new DrawComponent("assets/textures/ogr.png"))
+                   .AddComponent(new PositionComponent(70,60,8,16))
+                   .AddComponent(new OgrComponent())
                    .Build();
 
 }
