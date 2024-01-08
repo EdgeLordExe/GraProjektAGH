@@ -92,6 +92,7 @@ void PlayerSystem::Run(){
     }
     //Jest wiecej niz jeden gracz? tak czy siak to powinno byc nie mozliwe, ale przy duzych projektach niczego nie mozna sie spodziewac
     if(queried.size() > 1){
+        std::cout << "WIECEJ NIZ JEDEN GRACZ!" << std::endl;
         return;
     }
     //Bierzemy EntityId gracza
