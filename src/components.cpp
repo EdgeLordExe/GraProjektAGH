@@ -1,14 +1,10 @@
 #include <algorithm>
+#include <cmath>
 
 #include "components.hpp"
 
 PlayerComponent::PlayerComponent() {
     component_id = COMP_PLAYER;
-    cam = {0};
-    cam.offset = {SCREEN_WIDTH / 2.0f, SCREEN_HEIGHT / 2.0f};
-    cam.target = {0,0};
-    cam.rotation = 0.0f;
-    cam.zoom = 2.0f;
 }
 
 DrawComponent::DrawComponent( std::string path) {
@@ -42,7 +38,7 @@ void DrawSystem::Run(){
 
     BeginDrawing();
     ClearBackground(WHITE);
-    BeginMode2D(player_comp->cam);
+    BeginMode2D(ecs->cam);
     for(int x = 0; x < ecs->tilemap->w; x ++){
         for(int y = 0; y < ecs->tilemap->h; y ++){
             tileId tile = ecs->tilemap->GetTile(x,y);
@@ -104,8 +100,8 @@ void PlayerSystem::Run(){
         if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT)){
             Vector2 coords = GetMousePosition();
             std::cout << "x :" << coords.x << "y :" << coords.y << std::endl;
-            uint64_t worldx = coords.x/2 + player->cam.target.x - SCREEN_WIDTH/4;
-            uint64_t worldy = coords.y/2 + player->cam.target.y - SCREEN_HEIGHT/4;
+            uint64_t worldx = coords.x/2 + ecs->cam.target.x - SCREEN_WIDTH/4;
+            uint64_t worldy = coords.y/2 + ecs->cam.target.y - SCREEN_HEIGHT/4;
 
             uint64_t tx = worldx/32;
             uint64_t ty = worldy/32;
@@ -173,7 +169,41 @@ void PlayerSystem::Run(){
     position->x = std::clamp(position->x,0.0,(double)(t->w*32) - 32);
     position->y = std::clamp(position->y,0.0,(double)(t->h*32) - 32);
 
-    player->cam.target = {  std::clamp((float)position->x + 16, (float)(SCREEN_WIDTH/4), (float)((t->w*32) - SCREEN_WIDTH/4)),
+    ecs->cam.target = {  std::clamp((float)position->x + 16, (float)(SCREEN_WIDTH/4), (float)((t->w*32) - SCREEN_WIDTH/4)),
                             std::clamp((float)position->y + 16, (float)(SCREEN_HEIGHT/4), (float)((t->h*32) - SCREEN_HEIGHT/4))};
 
+
+    //Bronie!
+
+    if(player->current_weapon.has_value()){
+        weaponId w = player->current_weapon.value();
+        ecs->weapon_registry->GetWeaponId(w)->Tick(position->x, position->y);
+    }
+
+}
+
+BulletComponent::BulletComponent(float angle, int damage, float speed, int range) : angle(angle), damage(damage), speed(speed), range(range){
+    component_id = COMP_BULLET;
+}
+
+void BulletSystem::Run(){
+    ECS* ecs = ECS::instance();
+    auto query = ecs->Query(COMP_BULLET | COMP_POSITION);
+    for(EntityId entityId : query){
+        PositionComponent* position = static_cast<PositionComponent*>( entityId.GetComponent(COMP_POSITION));
+        BulletComponent* bullet = static_cast<BulletComponent*>( entityId.GetComponent(COMP_BULLET));
+
+        position->x += bullet->speed * cos(bullet->angle);
+        position->y += bullet->speed * sin(bullet->angle);
+        bullet->travelled_range += bullet->speed;
+        if(bullet->travelled_range > bullet->range){
+            entityId.Del();
+        }
+        if(position->x < 0 || position->x > ecs->tilemap->w*32){
+            entityId.Del();
+        }
+        if(position->y < 0 || position->y > ecs->tilemap->h*32){
+            entityId.Del();
+        }
+    }
 }

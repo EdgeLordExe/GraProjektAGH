@@ -3,13 +3,14 @@
 
 #include <raylib.h>
 #include <unordered_map>
+#include <optional>
 #include "entity.hpp"
 #include "texture_store.hpp"
+#include "weapons.hpp"
 
 class PlayerComponent : public Component{
 public:
     PlayerComponent();
-    Camera2D cam;
     double movement_speed = 3.0;
     double sprint_speed = 6.0;
 
@@ -20,6 +21,8 @@ public:
     float current_stamina = 100;
 
     float stamina_regeneration = 0.1;
+
+    std::optional<weaponId> current_weapon = 0;
 };
 
 class PositionComponent : public Component{
@@ -64,6 +67,19 @@ class InspectComponent : public Component{
 
 };
 
+class BulletComponent : public Component{
+    public:
+    BulletComponent(float angle, int damage, float speed, int range);
 
+    float angle;
+    int damage;
+    float speed;
+    int range;
+    int travelled_range = 0;
+};
+
+class BulletSystem: public System{
+    virtual void Run() override;
+};
 
 #endif
