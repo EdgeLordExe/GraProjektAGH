@@ -22,9 +22,9 @@ public:
     float stamina_regeneration = 0.1;
 };
 
-class OgrComponent : public Component{
+class MonsterComponent : public Component{
     public:
-    OgrComponent();
+    MonsterComponent();
     double movement_speed = 2.0;
     
     int max_health = 10;
@@ -60,7 +60,7 @@ class PlayerSystem : public System{
 
 };
 
-class OgrSystem : public System{
+class MonsterSystem : public System{
     virtual void Run() override;
 };
 

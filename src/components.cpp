@@ -12,7 +12,7 @@ PlayerComponent::PlayerComponent() {
     cam.zoom = 2.0f;
 }
 
-OgrComponent::OgrComponent(){
+MonsterComponent::MonsterComponent(){
     component_id = COMP_OGR;
 }
 
@@ -184,26 +184,26 @@ void PlayerSystem::Run(){
 
 }
 
-void OgrSystem::Run(){
+void MonsterSystem::Run(){
     ECS* ecs = ECS::instance();
     if(ecs->GetState() != State::PLAY){
         return;
     }
     auto queriedPlayer = ecs->Query(COMP_PLAYER | COMP_POSITION);
-    auto queriedOgr = ecs->Query(COMP_OGR | COMP_POSITION);
+    auto queriedMonster = ecs->Query(COMP_OGR | COMP_POSITION);
     
-    if(!queriedPlayer.size() || !queriedOgr.size()){
+    if(!queriedPlayer.size() || !queriedMonster.size()){
         return;
     }
     auto playerEntityId = queriedPlayer[0];
     auto playerPosition = static_cast<PositionComponent*>(playerEntityId.GetComponent(COMP_POSITION));
 
-    auto ogrEntityId = queriedOgr[0];    
-    PositionComponent* ogrPosition = static_cast<PositionComponent*>( ogrEntityId.GetComponent(COMP_POSITION));
-    OgrComponent* ogr = static_cast<OgrComponent*>( ogrEntityId.GetComponent(COMP_OGR));
+    auto monsterEntityId = queriedMonster[0];    
+    PositionComponent* monsterPosition = static_cast<PositionComponent*>( monsterEntityId.GetComponent(COMP_POSITION));
+    MonsterComponent* monster = static_cast<MonsterComponent*>( monsterEntityId.GetComponent(COMP_OGR));
 
-    int tilex = ogrPosition->x /32;
-    int tiley = ogrPosition->y /32;
+    int tilex = monsterPosition->x /32;
+    int tiley = monsterPosition->y /32;
 
     std::vector<Rectangle> tile_collisions;
     std::unique_ptr<Tilemap>& t = ecs->tilemap;
@@ -225,15 +225,38 @@ void OgrSystem::Run(){
         }
     }
 
-    Vector2 direction = { playerPosition->x - ogrPosition->x, playerPosition->y - ogrPosition->y };
+    
+
+    Vector2 direction = { playerPosition->x - monsterPosition->x, playerPosition->y - monsterPosition->y };
     double kat = atan2(direction.y, direction.x);
 
-    ogrPosition->x += cos(kat) * ogr->movement_speed;
-    ogrPosition->y += sin(kat) * ogr->movement_speed;
+    double dh = cos(kat);
+    double dv = sin(kat);
 
-    ogrPosition->collision_box.x = ogrPosition->x - ogrPosition->collision_box.width / 2;
-    ogrPosition->collision_box.y = ogrPosition->y - ogrPosition->collision_box.height / 2;
+    Rectangle collision = monsterPosition->collision_box;
+    collision.x += dh * monster->movement_speed;
+    collision.y += dv * monster->movement_speed;
+    for(Rectangle r : tile_collisions){
+        if( r.x < collision.x + collision.width &&
+            r.x + r.width > collision.x && 
+            r.y < monsterPosition->collision_box.y + monsterPosition->collision_box.height &&
+            r.y + r.height > monsterPosition->collision_box.y) {
+                dh = 1;
+            }
+        if(r.x < monsterPosition->collision_box.x + monsterPosition->collision_box.width &&
+            r.x + r.width > monsterPosition->collision_box.x && 
+            r.y < collision.y + collision.height &&
+            r.y + r.height > collision.y){
+                dv = 0;
+            }
+    }
 
-    ogrPosition->x = std::clamp(ogrPosition->x, 0.0, (double)(ecs->tilemap->w * 32) - 32);
-    ogrPosition->y = std::clamp(ogrPosition->y, 0.0, (double)(ecs->tilemap->h * 32) - 32);
+    monsterPosition->x += dh * monster->movement_speed;
+    monsterPosition->y += dv * monster->movement_speed;
+
+    monsterPosition->collision_box.x = monsterPosition->x - monsterPosition->collision_box.width / 2;
+    monsterPosition->collision_box.y = monsterPosition->y - monsterPosition->collision_box.height / 2;
+
+    monsterPosition->x = std::clamp(monsterPosition->x, 0.0, (double)(ecs->tilemap->w * 32) - 32);
+    monsterPosition->y = std::clamp(monsterPosition->y, 0.0, (double)(ecs->tilemap->h * 32) - 32);
 }
