@@ -97,7 +97,7 @@ void ECS::Tick(){
 std::vector<EntityId> ECS::Query(uint64_t component_query) {
     auto ret = std::vector<EntityId>();
     for(auto& entity : entities){
-        if(entity.component_flags & component_query)
+        if((entity.component_flags & component_query) == component_query)
             ret.push_back(entity.getSafeId());
     }
     return ret;
