@@ -72,6 +72,8 @@ void ECS::Init(){
     //tilemap->InsertTileDefinition(TileDefinition(TextureStore::instance()->LoadTextureWithPath("assets/textures/t1.png")));
 
     weapon_registry->RegisterWeapon(new WeaponCrossbow());
+    weapon_registry->RegisterWeapon(new WeaponMinigun());
+    weapon_registry->RegisterWeapon(new WeaponShotgun());
 
     IncrementComponentStore(5);
 
