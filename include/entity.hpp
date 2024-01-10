@@ -135,7 +135,10 @@ class ECS{
             return gamestate;
         }
         
-        
+        //DEBUG VARIABLES
+        bool show_hitbox = false;
+
+
     private: 
 
         ECS(){};
