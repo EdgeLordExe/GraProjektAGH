@@ -39,9 +39,11 @@ public:
 class DrawComponent : public Component{
 public:
     DrawComponent( std::string path);
+    DrawComponent( std::string path, float rotation);
     virtual void ParseSignal(std::string signal, std::vector<std::any> values) override {};
 
     textureId text;
+    float rotation;
 };
 
 class DrawSystem : public System{

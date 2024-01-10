@@ -10,6 +10,12 @@ PlayerComponent::PlayerComponent() {
 DrawComponent::DrawComponent( std::string path) {
    component_id = COMP_DRAWABLE;
    text = TextureStore::instance()->LoadTextureWithPath(path);
+   rotation = 0;
+}
+
+DrawComponent::DrawComponent( std::string path, float rotation): rotation(rotation) {
+   component_id = COMP_DRAWABLE;
+   text = TextureStore::instance()->LoadTextureWithPath(path);
 }
 
 PositionComponent::PositionComponent(uint64_t xpos, uint64_t ypos, int collider_width, int collider_height){
@@ -61,7 +67,8 @@ void DrawSystem::Run(){
     for(auto entityId : queried){
         DrawComponent* drawable = static_cast<DrawComponent*>( entityId.GetComponent(COMP_DRAWABLE));
         PositionComponent* position = static_cast<PositionComponent*>( entityId.GetComponent(COMP_POSITION));
-        DrawTexture(txt->GetTexture(drawable->text), position->x -16,position->y -16, WHITE);
+        Vector2 pos = {position->x -16,position->y -16};
+        DrawTextureEx(txt->GetTexture(drawable->text), pos ,drawable->rotation,1, WHITE);
         //DrawRectangle(position->collision_box.x,position->collision_box.y,position->collision_box.width,position->collision_box.height,RED);
     }
     

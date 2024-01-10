@@ -71,16 +71,16 @@ void ECS::Init(){
     weapon_registry = std::make_unique<WeaponRegistry>();
     //tilemap->InsertTileDefinition(TileDefinition(TextureStore::instance()->LoadTextureWithPath("assets/textures/t1.png")));
 
-    weapon_registry->RegisterWeapon(new WeaponSimpleGun());
+    weapon_registry->RegisterWeapon(new WeaponCrossbow());
 
     IncrementComponentStore(5);
 
     InsertSystem(new PlayerSystem());
-
+    InsertSystem(new BulletSystem());
     //TO MUSI BYC ZAWSZE OSTATNIE ZAUFAJCIE MI
     InsertSystem(new DrawSystem());
 
-    InsertSystem(new BulletSystem());
+ 
 
     EntityBuilder().AddComponent(new DrawComponent("assets/textures/player.png"))
                    .AddComponent(new PositionComponent(50,50,8,16))
