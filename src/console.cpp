@@ -93,6 +93,8 @@ void Console::ParseCommand(){
         history.push_back("TMLOAD   - loads a tilemap from a file: TMLOAD <filename>");
         history.push_back("TMEDIT   - allows you to edit the tilemao");
         history.push_back("TDADD - adds new tile definition: TDADD <texture path> <collision>");
+        history.push_back("TGVISHBOX - toggles hitbox visibility");
+
     }
 
     if(parts[0] == "tmedit"){
@@ -144,4 +146,16 @@ void Console::ParseCommand(){
         tileId id = ecs->tilemap->InsertTileDefinition(TileDefinition(txt->LoadTextureWithPath(path),collision,autotile));
         history.push_back(std::format("Successfully inserted tile with id: {}",id));
     }
+
+    if(parts[0] == "tgvishbox"){
+        if(parts.size() != 1){
+            history.push_back("ERROR: Wrong amount of commands passed into the console, use tdadd like: tgvishbox");
+            return;
+        }
+        ECS* ecs = ECS::instance();
+        ecs->show_hitbox = !ecs->show_hitbox;
+    }
+
+
+
 }

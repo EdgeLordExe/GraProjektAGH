@@ -58,9 +58,9 @@ void DrawSystem::Run(){
                 DrawTextureRec(txt->GetTexture(texture),r,v,WHITE);
             }
             
-            //if(td.collision){
-            //    DrawRectangle(x*32,y*32,32,32,RED);
-            //}
+            if(td.collision && ecs->show_hitbox){
+                DrawRectangle(x*32,y*32,32,32,RED);
+            }
         }
     }
 
@@ -69,7 +69,9 @@ void DrawSystem::Run(){
         PositionComponent* position = static_cast<PositionComponent*>( entityId.GetComponent(COMP_POSITION));
         Vector2 pos = {position->x -16,position->y -16};
         DrawTextureEx(txt->GetTexture(drawable->text), pos ,drawable->rotation,1, WHITE);
-        //DrawRectangle(position->collision_box.x,position->collision_box.y,position->collision_box.width,position->collision_box.height,RED);
+        if(ecs->show_hitbox){
+            DrawRectangle(position->collision_box.x,position->collision_box.y,position->collision_box.width,position->collision_box.height,RED);
+        }
     }
     
     EndMode2D();
