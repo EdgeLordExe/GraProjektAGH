@@ -46,7 +46,7 @@ bool EntityId::HasOneOfComponents(uint64_t compid){
     }
     ECS* ecs = ECS::instance();
     Entity* entity = ECS::instance()->GetEntity(*this);
-    return entity->component_flags | compid;
+    return entity->component_flags & compid;
 
 }
 
@@ -91,10 +91,11 @@ void ECS::Init(){
     weapon_registry->RegisterWeapon(new WeaponMinigun());
     weapon_registry->RegisterWeapon(new WeaponShotgun());
 
-    IncrementComponentStore(5);
+    IncrementComponentStore(6);
 
     InsertSystem(new PlayerSystem());
     InsertSystem(new BulletSystem());
+    InsertSystem(new MonsterSystem());
     //TO MUSI BYC ZAWSZE OSTATNIE ZAUFAJCIE MI
     InsertSystem(new DrawSystem());
 
@@ -105,10 +106,10 @@ void ECS::Init(){
                    .AddComponent(new PlayerComponent())
                    .Build();
 
-    InsertSystem(new MonsterSystem());
+
 
     EntityBuilder().AddComponent(new DrawComponent("assets/textures/ogr.png"))
-                   .AddComponent(new PositionComponent(100,100,8,16))
+                   .AddComponent(new PositionComponent(100,100,8,16,9,8))
                    .AddComponent(new MonsterComponent())
                    .Build();
 
@@ -127,6 +128,7 @@ void ECS::Tick(){
     for(auto& system : systems){
         system->Run();
     }
+    debug_rectangles.clear();
     DeleteMarkedEntities();
 }
 
@@ -165,6 +167,7 @@ EntityId ECS::MakeEntity(){
     if(!free_ids.size()){
         Entity entity;
         entity.id = entities.size();
+        entity.gen = 0;
         entities.push_back(entity);
         for(auto& comp_vec : component_store){
             comp_vec.emplace_back(std::unique_ptr<Component>(nullptr));

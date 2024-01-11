@@ -36,7 +36,7 @@ public:
 class MonsterComponent : public Component{
     public:
     MonsterComponent();
-    double movement_speed = 2.0;
+    double movement_speed = 1.0;
     
     int max_health = 10;
     int current_health = 10;
