@@ -7,6 +7,10 @@ PlayerComponent::PlayerComponent() {
     component_id = COMP_PLAYER;
 }
 
+MonsterComponent::MonsterComponent(){
+    component_id = COMP_OGR;
+}
+
 DrawComponent::DrawComponent( std::string path) {
    component_id = COMP_DRAWABLE;
    text = TextureStore::instance()->LoadTextureWithPath(path);
@@ -209,6 +213,7 @@ void PlayerSystem::Run(){
     }
     //Jest wiecej niz jeden gracz? tak czy siak to powinno byc nie mozliwe, ale przy duzych projektach niczego nie mozna sie spodziewac
     if(queried.size() > 1){
+        std::cout << "WIECEJ NIZ JEDEN GRACZ!" << std::endl;
         return;
     }
     //Bierzemy EntityId gracza
@@ -273,4 +278,81 @@ void BulletSystem::Run(){
             entityId.Del();
         }
     }
+}
+
+void MonsterSystem::Run(){
+    ECS* ecs = ECS::instance();
+    if(ecs->GetState() != State::PLAY){
+        return;
+    }
+    auto queriedPlayer = ecs->Query(COMP_PLAYER | COMP_POSITION);
+    auto queriedMonster = ecs->Query(COMP_OGR | COMP_POSITION);
+    
+    if(!queriedPlayer.size() || !queriedMonster.size()){
+        return;
+    }
+    auto playerEntityId = queriedPlayer[0];
+    auto playerPosition = static_cast<PositionComponent*>(playerEntityId.GetComponent(COMP_POSITION));
+
+    auto monsterEntityId = queriedMonster[0];    
+    PositionComponent* monsterPosition = static_cast<PositionComponent*>( monsterEntityId.GetComponent(COMP_POSITION));
+    MonsterComponent* monster = static_cast<MonsterComponent*>( monsterEntityId.GetComponent(COMP_OGR));
+
+    int tilex = monsterPosition->x /32;
+    int tiley = monsterPosition->y /32;
+
+    std::vector<Rectangle> tile_collisions;
+    std::unique_ptr<Tilemap>& t = ecs->tilemap;
+    for(int i = -1; i <= 1; i ++){
+        for(int k = -1 ; k <= 1; k ++){
+            if((tilex + i < 0) || (tiley + k < 0) || (tilex + i >= t->w) || (tiley +k >= t->h)){
+                continue;
+            }
+
+            TileDefinition td = t->GetTileDefinition(t->GetTile(tilex + i, tiley + k));
+            Rectangle r;
+            if(td.collision){
+                r.x = (tilex + i) * 32;
+                r.y = (tiley + k) * 32;
+                r.width = 32;
+                r.height = 32;
+                tile_collisions.push_back(r);
+            } 
+        }
+    }
+
+    
+
+    Vector2 direction = { playerPosition->x - monsterPosition->x, playerPosition->y - monsterPosition->y };
+    double kat = atan2(direction.y, direction.x);
+
+    double dh = cos(kat);
+    double dv = sin(kat);
+
+    Rectangle collision = monsterPosition->collision_box;
+    collision.x += dh * monster->movement_speed;
+    collision.y += dv * monster->movement_speed;
+    for(Rectangle r : tile_collisions){
+        if( r.x < collision.x + collision.width &&
+            r.x + r.width > collision.x && 
+            r.y < monsterPosition->collision_box.y + monsterPosition->collision_box.height &&
+            r.y + r.height > monsterPosition->collision_box.y) {
+                dh = 1;
+            }
+        if(r.x < monsterPosition->collision_box.x + monsterPosition->collision_box.width &&
+            r.x + r.width > monsterPosition->collision_box.x && 
+            r.y < collision.y + collision.height &&
+            r.y + r.height > collision.y){
+                dv = 0;
+            }
+    }
+
+    monsterPosition->x += dh * monster->movement_speed;
+    monsterPosition->y += dv * monster->movement_speed;
+
+    monsterPosition->collision_box.x = monsterPosition->x - monsterPosition->collision_box.width / 2;
+    monsterPosition->collision_box.y = monsterPosition->y - monsterPosition->collision_box.height / 2;
+
+    monsterPosition->x = std::clamp(monsterPosition->x, 0.0, (double)(ecs->tilemap->w * 32) - 32);
+    monsterPosition->y = std::clamp(monsterPosition->y, 0.0, (double)(ecs->tilemap->h * 32) - 32);
 }

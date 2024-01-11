@@ -33,6 +33,16 @@ public:
     std::optional<weaponId> current_weapon = 0;
 };
 
+class MonsterComponent : public Component{
+    public:
+    MonsterComponent();
+    double movement_speed = 2.0;
+    
+    int max_health = 10;
+    int current_health = 10;
+
+};
+
 class PositionComponent : public Component{
 public:
     PositionComponent(uint64_t xpos, uint64_t ypos,int collider_width, int collider_height, int collider_x_offset, int collider_y_offset);
@@ -65,6 +75,10 @@ class DrawSystem : public System{
 class PlayerSystem : public System{
     virtual void Run() override;
 
+};
+
+class MonsterSystem : public System{
+    virtual void Run() override;
 };
 
 class InspectComponent : public Component{
