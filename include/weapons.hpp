@@ -35,6 +35,9 @@ class WeaponSimpleGun : public Weapon{
     int bullet_range_variation;
     int bullet_speed;
     int bullet_speed_variation;
+    int bullet_x_offset;
+    int bullet_y_offset;
+
     std::string bullet_texture;
     WeaponSimpleGun(){
         automatic = false;
@@ -48,6 +51,8 @@ class WeaponSimpleGun : public Weapon{
         bullet_speed = 10;
         bullet_speed_variation = 1;
         bullet_texture = "assets/textures/bullet.png";
+        bullet_x_offset = 2;
+        bullet_y_offset = 2;
     }
 
     
@@ -97,6 +102,8 @@ class WeaponCrossbow : public WeaponSimpleGun{
         bullet_speed = 16;
         bullet_speed_variation = 1;
         bullet_texture = "assets/textures/bolt.png";
+        bullet_x_offset = 4;
+        bullet_y_offset = 4;
     }
 };
 

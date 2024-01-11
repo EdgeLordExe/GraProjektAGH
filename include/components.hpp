@@ -10,6 +10,12 @@
 
 void MoveAndSlide(EntityId id,Vector2 velocity);
 
+void MoveAndSlide(EntityId id,Vector2 velocity, bool collide_with_entities);
+
+void MoveAndSlide(EntityId id,Vector2 velocity, bool collide_with_entities, bool del_on_hit);
+
+void MoveAndSlide(EntityId id,Vector2 velocity, bool collide_with_entities, bool del_on_hit, uint64_t ignore_entities_with_components);
+
 class PlayerComponent : public Component{
 public:
     PlayerComponent();
@@ -29,7 +35,7 @@ public:
 
 class PositionComponent : public Component{
 public:
-    PositionComponent(uint64_t xpos, uint64_t ypos,int collider_width, int collider_height);
+    PositionComponent(uint64_t xpos, uint64_t ypos,int collider_width, int collider_height, int collider_x_offset, int collider_y_offset);
 
 
 
@@ -38,6 +44,8 @@ public:
     double x;
     double y;
     Rectangle collision_box;
+    int x_offset;
+    int y_offset;
 };
 
 class DrawComponent : public Component{

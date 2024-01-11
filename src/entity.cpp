@@ -31,7 +31,23 @@ bool EntityId::IsValid(){
 }
 
 void EntityId::Del(){
-    ECS::instance()->DelEntity(*this);
+    auto* p = GetComponent(COMP_POSITION);
+    ECS* ecs = ECS::instance();
+    if(p != nullptr){
+        auto* cpos = static_cast<PositionComponent*>(p);
+        ecs->tilemap->RemoveEntityFromTile(cpos->x/32,cpos->y/32,*this);
+    }
+    ecs->DelEntity(*this);
+}
+
+bool EntityId::HasOneOfComponents(uint64_t compid){
+    if(!IsValid()){
+        return false;
+    }
+    ECS* ecs = ECS::instance();
+    Entity* entity = ECS::instance()->GetEntity(*this);
+    return entity->component_flags | compid;
+
 }
 
 uint64_t EntityId::AddComponent(Component* comp){
@@ -85,7 +101,7 @@ void ECS::Init(){
  
 
     EntityBuilder().AddComponent(new DrawComponent("assets/textures/player.png"))
-                   .AddComponent(new PositionComponent(50,50,8,16))
+                   .AddComponent(new PositionComponent(50,50,8,16,16,16))
                    .AddComponent(new PlayerComponent())
                    .Build();
 

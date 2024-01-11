@@ -64,13 +64,13 @@ struct EntityId{
         return (id == rhs.id && gen == rhs.gen);
     }
 
-    
-
     bool IsValid();
 
     void Del();
 
     Component* GetComponent(uint64_t compid);
+
+    bool HasOneOfComponents(uint64_t compid);
 
     uint64_t AddComponent(Component* comp);
     void RemoveComponent(uint64_t compid);
