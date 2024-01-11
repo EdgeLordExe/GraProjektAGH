@@ -192,9 +192,10 @@ void DrawSystem::Run(){
             DrawCircle(position->x,position->y,2,BLUE);
         }
     }
-
-    for(Rectangle r : ecs->debug_rectangles){
-        DrawRectangle(r.x,r.y,r.width,r.height,GREEN);
+    if(ecs->show_hitbox){
+        for(Rectangle r : ecs->debug_rectangles){
+            DrawRectangle(r.x,r.y,r.width,r.height,GREEN);
+        }
     }
     
     EndMode2D();
