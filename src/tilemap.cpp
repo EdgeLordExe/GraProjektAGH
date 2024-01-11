@@ -152,8 +152,8 @@ void Tilemap::InsertEntityOnTile(uint64_t x, uint64_t y, EntityId id){
 void Tilemap::RemoveEntityFromTile(uint64_t x, uint64_t y, EntityId id){
     for(int i = 0 ; i < entities[x + y * w].size(); i ++){
         if(entities[x + y * w][i] == id){
-            std::vector<EntityId>& v = entities[x + y * w];
-            v.erase(v.begin() + i);
+            //std::cout << "REMOVED ENTITY!" << std::endl;
+            entities[x + y * w].erase(entities[x + y * w].begin() + i);
         }
     }
 }

@@ -1,35 +1,52 @@
 #include <algorithm>
+#include <cmath>
 
 #include "components.hpp"
 
 PlayerComponent::PlayerComponent() {
     component_id = COMP_PLAYER;
-    cam = {0};
-    cam.offset = {SCREEN_WIDTH / 2.0f, SCREEN_HEIGHT / 2.0f};
-    cam.target = {0,0};
-    cam.rotation = 0.0f;
-    cam.zoom = 2.0f;
 }
 
 DrawComponent::DrawComponent( std::string path) {
    component_id = COMP_DRAWABLE;
    text = TextureStore::instance()->LoadTextureWithPath(path);
+   rotation = 0;
 }
 
-PositionComponent::PositionComponent(uint64_t xpos, uint64_t ypos, int collider_width, int collider_height){
+DrawComponent::DrawComponent( std::string path, float rotation): rotation(rotation) {
+   component_id = COMP_DRAWABLE;
+   text = TextureStore::instance()->LoadTextureWithPath(path);
+}
+
+PositionComponent::PositionComponent(uint64_t xpos, uint64_t ypos, int collider_width, int collider_height, int collider_x_offset, int collider_y_offset){
     component_id = COMP_POSITION;
     x = xpos;
     y = ypos;
-    collision_box = {(float)x,(float)y,(float)collider_width,(float)collider_height};
+    x_offset = collider_x_offset;
+    y_offset = collider_y_offset;
+    collision_box = {(float)x - collider_x_offset,(float)y - collider_y_offset,(float)collider_width,(float)collider_height};
+}
+
+void MoveAndSlide(EntityId id,Vector2 velocity){
+    MoveAndSlide(id,velocity,true,false,0);
 }
 
 void MoveAndSlide(EntityId id,Vector2 velocity, bool collide_with_entities){
+    MoveAndSlide(id,velocity,collide_with_entities,false,0);
+}
+
+void MoveAndSlide(EntityId id,Vector2 velocity, bool collide_with_entities,bool del_on_hit){
+    MoveAndSlide(id,velocity,collide_with_entities,false,0);
+}
+
+void MoveAndSlide(EntityId id,Vector2 velocity, bool collide_with_entities,bool del_on_hit, uint64_t ignore_entities_with_components){
     ECS* ecs = ECS::instance();
     auto* position = static_cast<PositionComponent*>( id.GetComponent(COMP_POSITION));
     
     
     int tilex = position->x /32;
     int tiley = position->y /32;
+    //std::cout << "x : " << position->x  << " y :" << position->y << std::endl;
 
     std::vector<Rectangle> collisions;
     std::unique_ptr<Tilemap>& t = ecs->tilemap;
@@ -57,6 +74,9 @@ void MoveAndSlide(EntityId id,Vector2 velocity, bool collide_with_entities){
                 if(e == id){
                     continue; // nie kolidujemy z samym soba!
                 }
+                if(ignore_entities_with_components != 0 && e.HasOneOfComponents(ignore_entities_with_components)){
+                    continue;
+                }
                 auto* epos = static_cast<PositionComponent*>( id.GetComponent(COMP_POSITION));
                 collisions.push_back(epos->collision_box);
             }
@@ -74,12 +94,20 @@ void MoveAndSlide(EntityId id,Vector2 velocity, bool collide_with_entities){
             r.y < position->collision_box.y + position->collision_box.height &&
             r.y + r.height > position->collision_box.y) {
                 velocity.x = 0;
+                if(del_on_hit){
+                    id.Del();
+                    return;
+                }
             }
         if(r.x < position->collision_box.x + position->collision_box.width &&
             r.x + r.width > position->collision_box.x && 
             r.y < collision.y + collision.height &&
             r.y + r.height > collision.y){
                 velocity.y = 0;
+                if(del_on_hit){
+                    id.Del();
+                    return;
+                }
             }
     }
     position->x += velocity.x;
@@ -88,13 +116,25 @@ void MoveAndSlide(EntityId id,Vector2 velocity, bool collide_with_entities){
 
     position->collision_box.x = position->x - position->collision_box.width/2;
     position->collision_box.y = position->y - position->collision_box.height/2;
+    if(!del_on_hit){
+        position->x = std::clamp(position->x,0.0,(double)(t->w*32) - 32);
+        position->y = std::clamp(position->y,0.0,(double)(t->h*32) - 32);
+    } else {
+        if(position->x <= 0 || position->x >= ((t->w*32) - 64) ){
+            t->RemoveEntityFromTile(tilex,tiley,id);
+            id.Del();
+            return;
+        }
+        if(position->y <= 0 || position->y >= ((t->h*32) -64) ){
+            t->RemoveEntityFromTile(tilex,tiley,id);
+            id.Del();
+            return;
+        }
+    }
 
-    position->x = std::clamp(position->x,0.0,(double)(t->w*32) - 32);
-    position->y = std::clamp(position->y,0.0,(double)(t->h*32) - 32);
-    
-    if(tilex != (int)(position->x/2) || tiley != (int)(position->y/2)){
+    if(tilex != (int)(position->x/32) || tiley != (int)(position->y/32)){
         t->RemoveEntityFromTile(tilex,tiley,id);
-        t->InsertEntityOnTile(tilex,tiley,id);
+        t->InsertEntityOnTile((int)(position->x/32),(int)(position->y/32),id);
     }
 
 }
@@ -118,7 +158,7 @@ void DrawSystem::Run(){
 
     BeginDrawing();
     ClearBackground(WHITE);
-    BeginMode2D(player_comp->cam);
+    BeginMode2D(ecs->cam);
     for(int x = 0; x < ecs->tilemap->w; x ++){
         for(int y = 0; y < ecs->tilemap->h; y ++){
             tileId tile = ecs->tilemap->GetTile(x,y);
@@ -141,10 +181,13 @@ void DrawSystem::Run(){
     for(auto entityId : queried){
         DrawComponent* drawable = static_cast<DrawComponent*>( entityId.GetComponent(COMP_DRAWABLE));
         PositionComponent* position = static_cast<PositionComponent*>( entityId.GetComponent(COMP_POSITION));
-        DrawTexture(txt->GetTexture(drawable->text), position->x -16,position->y -16, WHITE);
+        Vector2 pos = {position->x - position->x_offset,position->y - position->y_offset};
+        DrawTextureEx(txt->GetTexture(drawable->text), pos ,drawable->rotation,1, WHITE);
         if(ecs->show_hitbox){
             DrawRectangle(position->collision_box.x,position->collision_box.y,position->collision_box.width,position->collision_box.height,RED);
+            DrawCircle(position->x,position->y,2,BLUE);
         }
+       
     }
     
     EndMode2D();
@@ -182,8 +225,8 @@ void PlayerSystem::Run(){
         if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT)){
             Vector2 coords = GetMousePosition();
             std::cout << "x :" << coords.x << "y :" << coords.y << std::endl;
-            uint64_t worldx = coords.x/2 + player->cam.target.x - SCREEN_WIDTH/4;
-            uint64_t worldy = coords.y/2 + player->cam.target.y - SCREEN_HEIGHT/4;
+            uint64_t worldx = coords.x/2 + ecs->cam.target.x - SCREEN_WIDTH/4;
+            uint64_t worldy = coords.y/2 + ecs->cam.target.y - SCREEN_HEIGHT/4;
 
             uint64_t tx = worldx/32;
             uint64_t ty = worldy/32;
@@ -195,9 +238,39 @@ void PlayerSystem::Run(){
 
     double ms = player->movement_speed;
     Vector2 vel  ={dh*ms,dv*ms};
-    MoveAndSlide(entityId,vel,true);
+    MoveAndSlide(entityId,vel,true,false,COMP_BULLET);
 
-    player->cam.target = {  std::clamp((float)position->x + 16, (float)(SCREEN_WIDTH/4), (float)((t->w*32) - SCREEN_WIDTH/4)),
+    ecs->cam.target = {  std::clamp((float)position->x + 16, (float)(SCREEN_WIDTH/4), (float)((t->w*32) - SCREEN_WIDTH/4)),
                             std::clamp((float)position->y + 16, (float)(SCREEN_HEIGHT/4), (float)((t->h*32) - SCREEN_HEIGHT/4))};
 
+
+    //Bronie!
+
+    if(player->current_weapon.has_value()){
+        weaponId w = player->current_weapon.value();
+        ecs->weapon_registry->GetWeaponId(w)->Tick(position->x, position->y);
+    }
+
+}
+
+BulletComponent::BulletComponent(float angle, int damage, float speed, int range) : angle(angle), damage(damage), speed(speed), range(range){
+    component_id = COMP_BULLET;
+}
+
+void BulletSystem::Run(){
+    ECS* ecs = ECS::instance();
+    auto query = ecs->Query(COMP_BULLET | COMP_POSITION);
+    for(EntityId entityId : query){
+        PositionComponent* position = static_cast<PositionComponent*>( entityId.GetComponent(COMP_POSITION));
+        BulletComponent* bullet = static_cast<BulletComponent*>( entityId.GetComponent(COMP_BULLET));
+        Vector2 vel = {bullet->speed * cos(bullet->angle),bullet->speed * sin(bullet->angle)};
+        MoveAndSlide(entityId,vel,true,true,COMP_PLAYER | COMP_BULLET);
+        if(!entityId.IsValid()){
+            continue;
+        }
+        bullet->travelled_range += bullet->speed;
+        if(bullet->travelled_range > bullet->range){
+            entityId.Del();
+        }
+    }
 }

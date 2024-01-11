@@ -15,6 +15,7 @@
 
 #include "tilemap.hpp"
 #include "console.hpp"
+#include "weapons.hpp"
 
 typedef uint64_t entityId;
 
@@ -30,6 +31,7 @@ enum State{
 #define COMP_POSITION   (1 << 1)
 #define COMP_PLAYER     (1 << 2)
 #define COMP_INSPECT     (1 << 3)
+#define COMP_BULLET (1 << 4)
 
 class Component
 {
@@ -62,13 +64,13 @@ struct EntityId{
         return (id == rhs.id && gen == rhs.gen);
     }
 
-    
-
     bool IsValid();
 
     void Del();
 
     Component* GetComponent(uint64_t compid);
+
+    bool HasOneOfComponents(uint64_t compid);
 
     uint64_t AddComponent(Component* comp);
     void RemoveComponent(uint64_t compid);
@@ -128,6 +130,8 @@ class ECS{
 
         std::unique_ptr<Tilemap> tilemap;
         std::unique_ptr<Console> console;
+        std::unique_ptr<WeaponRegistry> weapon_registry;
+        Camera2D cam;
 
         void SwitchState(State newstate){
             gamestate = newstate;

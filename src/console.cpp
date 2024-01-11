@@ -3,7 +3,7 @@
 #include <format>
 #include "console.hpp"
 #include "entity.hpp"
-
+#include "components.hpp"
 
 void Console::Draw(){
     ECS* ecs = ECS::instance();
@@ -94,6 +94,7 @@ void Console::ParseCommand(){
         history.push_back("TMEDIT   - allows you to edit the tilemao");
         history.push_back("TDADD - adds new tile definition: TDADD <texture path> <collision>");
         history.push_back("TGVISHBOX - toggles hitbox visibility");
+        history.push_back("GVWEAPON - gives a weapon: GVWEAPON <weapon id>");
 
     }
 
@@ -154,6 +155,17 @@ void Console::ParseCommand(){
         }
         ECS* ecs = ECS::instance();
         ecs->show_hitbox = !ecs->show_hitbox;
+    }
+
+     if(parts[0] == "gvweapon"){
+        if(parts.size() != 2){
+            history.push_back("ERROR: Wrong amount of commands passed into the console, use tdadd like: tgvishbox <weapon_id>");
+            return;
+        }
+        ECS* ecs = ECS::instance();
+        auto* pcomp = static_cast<PlayerComponent*>( ecs->Query(COMP_PLAYER)[0].GetComponent(COMP_PLAYER));
+        weaponId wid = stoi(parts[1]);
+        pcomp->current_weapon = wid;
     }
 
 

@@ -7,11 +7,10 @@ Texture2D TextureStore::GetTexture(textureId id){
 }
 
 textureId TextureStore::LoadTextureWithPath(std::string path){
-    std::cout << "Loading " << path << std::endl;
     if(mapping.count(path)){
         return mapping[path];
     }
-    
+    std::cout << "Loading " << path << std::endl;
     textureId id = textures.size();
     std::cout << "Texture-id :" << id << std::endl;
     textures.push_back(LoadTexture(path.c_str()));

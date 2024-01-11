@@ -31,7 +31,23 @@ bool EntityId::IsValid(){
 }
 
 void EntityId::Del(){
-    ECS::instance()->DelEntity(*this);
+    auto* p = GetComponent(COMP_POSITION);
+    ECS* ecs = ECS::instance();
+    if(p != nullptr){
+        auto* cpos = static_cast<PositionComponent*>(p);
+        ecs->tilemap->RemoveEntityFromTile(cpos->x/32,cpos->y/32,*this);
+    }
+    ecs->DelEntity(*this);
+}
+
+bool EntityId::HasOneOfComponents(uint64_t compid){
+    if(!IsValid()){
+        return false;
+    }
+    ECS* ecs = ECS::instance();
+    Entity* entity = ECS::instance()->GetEntity(*this);
+    return entity->component_flags | compid;
+
 }
 
 uint64_t EntityId::AddComponent(Component* comp){
@@ -60,19 +76,32 @@ void EntityId::RemoveComponent(uint64_t compid){
 /// ECS
 
 void ECS::Init(){
+    cam = {0};
+    cam.offset = {SCREEN_WIDTH / 2.0f, SCREEN_HEIGHT / 2.0f};
+    cam.target = {0,0};
+    cam.rotation = 0.0f;
+    cam.zoom = 2.0f;
+
     tilemap = std::make_unique<Tilemap>("assets/tilemaps/t1.txt");
     console = std::make_unique<Console>();
+    weapon_registry = std::make_unique<WeaponRegistry>();
     //tilemap->InsertTileDefinition(TileDefinition(TextureStore::instance()->LoadTextureWithPath("assets/textures/t1.png")));
 
-    IncrementComponentStore(3);
+    weapon_registry->RegisterWeapon(new WeaponCrossbow());
+    weapon_registry->RegisterWeapon(new WeaponMinigun());
+    weapon_registry->RegisterWeapon(new WeaponShotgun());
+
+    IncrementComponentStore(5);
 
     InsertSystem(new PlayerSystem());
-
+    InsertSystem(new BulletSystem());
     //TO MUSI BYC ZAWSZE OSTATNIE ZAUFAJCIE MI
     InsertSystem(new DrawSystem());
 
+ 
+
     EntityBuilder().AddComponent(new DrawComponent("assets/textures/player.png"))
-                   .AddComponent(new PositionComponent(50,50,8,16))
+                   .AddComponent(new PositionComponent(50,50,8,16,16,16))
                    .AddComponent(new PlayerComponent())
                    .Build();
 
