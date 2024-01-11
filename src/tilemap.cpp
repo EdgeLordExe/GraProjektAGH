@@ -31,6 +31,7 @@ void Tilemap::Load(std::string path){
     h = s.Deserialize<uint64_t>();
     tiles.resize(w * h);
     autotiles_bitmap.resize(w * h);
+    entities.resize(w * h);
     uint64_t tid_amt = s.Deserialize<uint64_t>();
     tileDefinitions.clear();
     for(int i = 0 ; i < tid_amt; i ++){
@@ -107,48 +108,57 @@ void Tilemap::SetTile(uint64_t x, uint64_t y,tileId id){
         return;
     }
     char autotile_bitmap = 0 ;
-    std::cout << "works here 1" << std::endl;
 
     if((x + 1 < w) && (GetTile(x + 1, y) == oldId)){
         SetAutotileBitmap(x + 1, y, GetAutotileBitmap(x + 1, y) & ~LEFT);
     }
-    std::cout << "works here 2" << std::endl;
     if((x - 1 >= 0) && (GetTile(x - 1, y) == oldId)){
         SetAutotileBitmap(x - 1, y, GetAutotileBitmap(x - 1, y) & ~RIGHT);
     }
-    std::cout << "works here 3" << std::endl;
     if((y + 1 < h) && (GetTile(x, y+1) == oldId)){
         SetAutotileBitmap(x, y+1, GetAutotileBitmap(x, y+1) & ~TOP);
     }
-    std::cout << "works here 4" << std::endl;
     if((y - 1 >= 0) && (GetTile(x, y - 1) == oldId)){
         SetAutotileBitmap(x, y-1, GetAutotileBitmap(x, y-1) & ~BOTTOM);
     }
-    std::cout << "works here 5" << std::endl;
     if((x + 1 < w) && (GetTile(x + 1, y) == id)){
         SetAutotileBitmap(x + 1, y, GetAutotileBitmap(x + 1, y) | LEFT);
         autotile_bitmap |= RIGHT;
     }
-    std::cout << "works here 6" << std::endl;
     if((x - 1 >= 0) && (GetTile(x - 1, y) == id)){
         SetAutotileBitmap(x - 1, y, GetAutotileBitmap(x - 1, y) | RIGHT);
         autotile_bitmap |= LEFT;
     }
-    std::cout << "works here 7" << std::endl;
     if((y + 1 < h) && (GetTile(x, y+1) == id)){
         SetAutotileBitmap(x, y+1, GetAutotileBitmap(x, y+1) | TOP);
         autotile_bitmap |= BOTTOM;
     }
-    std::cout << "works here 8" << std::endl;
     if((y - 1 >= 0) && (GetTile(x, y - 1) == id)){
         SetAutotileBitmap(x, y-1, GetAutotileBitmap(x, y-1) | BOTTOM);
         autotile_bitmap |= TOP;
     }
-    std::cout << "works here 9" << std::endl;
     SetAutotileBitmap(x,y,autotile_bitmap);
     tiles[x + y * w] = id;
-    std::cout << "works here 10" << std::endl;
 }
+
+std::vector<EntityId>& Tilemap::GetEntitiesOnTile(uint64_t x, uint64_t y){
+    return entities[x + y * w];
+}
+
+void Tilemap::InsertEntityOnTile(uint64_t x, uint64_t y, EntityId id){
+    entities[x + y * w].push_back(id);
+}
+
+void Tilemap::RemoveEntityFromTile(uint64_t x, uint64_t y, EntityId id){
+    for(int i = 0 ; i < entities[x + y * w].size(); i ++){
+        if(entities[x + y * w][i] == id){
+            std::vector<EntityId>& v = entities[x + y * w];
+            v.erase(v.begin() + i);
+        }
+    }
+}
+
+
 /*
 std::vector<std::tuple<tileId,double,double>> Tilemap::GetSeenTiles(double x, double y){
     std::vector<std::tuple<tileId,double,double>> query;

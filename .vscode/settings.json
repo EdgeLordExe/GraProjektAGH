@@ -61,6 +61,9 @@
         "xhash": "cpp",
         "algorithm": "cpp",
         "optional": "cpp",
-        "fstream": "cpp"
+        "fstream": "cpp",
+        "xtree": "cpp",
+        "set": "cpp",
+        "unordered_set": "cpp"
     }
 }

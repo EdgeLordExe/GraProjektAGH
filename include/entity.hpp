@@ -64,6 +64,8 @@ struct EntityId{
         return (id == rhs.id && gen == rhs.gen);
     }
 
+    
+
     bool IsValid();
 
     void Del();

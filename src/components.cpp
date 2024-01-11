@@ -25,6 +25,82 @@ PositionComponent::PositionComponent(uint64_t xpos, uint64_t ypos, int collider_
     collision_box = {(float)x,(float)y,(float)collider_width,(float)collider_height};
 }
 
+void MoveAndSlide(EntityId id,Vector2 velocity, bool collide_with_entities){
+    ECS* ecs = ECS::instance();
+    auto* position = static_cast<PositionComponent*>( id.GetComponent(COMP_POSITION));
+    
+    
+    int tilex = position->x /32;
+    int tiley = position->y /32;
+
+    std::vector<Rectangle> collisions;
+    std::unique_ptr<Tilemap>& t = ecs->tilemap;
+    for(int i = -1; i <= 1; i ++){
+        for(int k = -1 ; k <= 1; k ++){
+            if((tilex + i < 0) || (tiley + k < 0) || (tilex + i >= t->w) || (tiley +k >= t->h)){
+                continue;
+            }
+
+            TileDefinition td = t->GetTileDefinition(t->GetTile(tilex + i, tiley + k));
+            Rectangle r;
+            if(td.collision){
+                r.x = (tilex + i) * 32;
+                r.y = (tiley + k) * 32;
+                r.width = 32;
+                r.height = 32;
+                collisions.push_back(r);
+            } 
+            auto entities_on_tile = t->GetEntitiesOnTile(tilex + i,tiley + k);
+            if(!collide_with_entities){
+                continue;
+            }
+
+            for(auto e : entities_on_tile){
+                if(e == id){
+                    continue; // nie kolidujemy z samym soba!
+                }
+                auto* epos = static_cast<PositionComponent*>( id.GetComponent(COMP_POSITION));
+                collisions.push_back(epos->collision_box);
+            }
+        }
+    }
+    int oldposx = position->x;
+    int oldposy = position->y;
+
+    Rectangle collision = position->collision_box;
+    collision.x += velocity.x;
+    collision.y += velocity.y;
+    for(Rectangle r : collisions){
+        if( r.x < collision.x + collision.width &&
+            r.x + r.width > collision.x && 
+            r.y < position->collision_box.y + position->collision_box.height &&
+            r.y + r.height > position->collision_box.y) {
+                velocity.x = 0;
+            }
+        if(r.x < position->collision_box.x + position->collision_box.width &&
+            r.x + r.width > position->collision_box.x && 
+            r.y < collision.y + collision.height &&
+            r.y + r.height > collision.y){
+                velocity.y = 0;
+            }
+    }
+    position->x += velocity.x;
+    
+    position->y += velocity.y;
+
+    position->collision_box.x = position->x - position->collision_box.width/2;
+    position->collision_box.y = position->y - position->collision_box.height/2;
+
+    position->x = std::clamp(position->x,0.0,(double)(t->w*32) - 32);
+    position->y = std::clamp(position->y,0.0,(double)(t->h*32) - 32);
+    
+    if(tilex != (int)(position->x/2) || tiley != (int)(position->y/2)){
+        t->RemoveEntityFromTile(tilex,tiley,id);
+        t->InsertEntityOnTile(tilex,tiley,id);
+    }
+
+}
+
 void DrawSystem::Run(){
     ECS* ecs = ECS::instance();
     TextureStore* txt = TextureStore::instance();
@@ -100,7 +176,7 @@ void PlayerSystem::Run(){
     //I bierzemy jego pozycje!
     PositionComponent* position = static_cast<PositionComponent*>( entityId.GetComponent(COMP_POSITION));
     PlayerComponent* player = static_cast<PlayerComponent*>( entityId.GetComponent(COMP_PLAYER));
-
+    std::unique_ptr<Tilemap>& t = ecs->tilemap;
     int dh = IsKeyDown(KEY_D) - IsKeyDown(KEY_A);
     int dv = IsKeyDown(KEY_S) - IsKeyDown(KEY_W);
 
@@ -121,64 +197,10 @@ void PlayerSystem::Run(){
 
 
     double ms = player->movement_speed;
+    Vector2 vel  ={dh*ms,dv*ms};
+    MoveAndSlide(entityId,vel,true);
 
-    //Tak takie cos dziala w c++, ale tylko dla jednej linijki B )
-    //if(dh != 0 && dv != 0)
-    //    ms *= 0.7; // ~~ 1/sqrt(2)
-
-    int tilex = position->x /32;
-    int tiley = position->y /32;
-
-    std::vector<Rectangle> tile_collisions;
-    std::unique_ptr<Tilemap>& t = ecs->tilemap;
-    for(int i = -1; i <= 1; i ++){
-        for(int k = -1 ; k <= 1; k ++){
-            if((tilex + i < 0) || (tiley + k < 0) || (tilex + i >= t->w) || (tiley +k >= t->h)){
-                continue;
-            }
-
-            TileDefinition td = t->GetTileDefinition(t->GetTile(tilex + i, tiley + k));
-            Rectangle r;
-            if(td.collision){
-                r.x = (tilex + i) * 32;
-                r.y = (tiley + k) * 32;
-                r.width = 32;
-                r.height = 32;
-                tile_collisions.push_back(r);
-            } 
-        }
-    }
-    int oldposx = position->x;
-    int oldposy = position->y;
-
-    Rectangle collision = position->collision_box;
-    collision.x += dh * ms;
-    collision.y += dv * ms;
-    for(Rectangle r : tile_collisions){
-        if( r.x < collision.x + collision.width &&
-            r.x + r.width > collision.x && 
-            r.y < position->collision_box.y + position->collision_box.height &&
-            r.y + r.height > position->collision_box.y) {
-                dh = 0;
-            }
-        if(r.x < position->collision_box.x + position->collision_box.width &&
-            r.x + r.width > position->collision_box.x && 
-            r.y < collision.y + collision.height &&
-            r.y + r.height > collision.y){
-                dv = 0;
-            }
-    }
-    position->x += dh*ms;
-    
-    position->y += dv*ms;
-
-    position->collision_box.x = position->x - position->collision_box.width/2;
-    position->collision_box.y = position->y - position->collision_box.height/2;
-
-    position->x = std::clamp(position->x,0.0,(double)(t->w*32) - 32);
-    position->y = std::clamp(position->y,0.0,(double)(t->h*32) - 32);
-
-    ecs->cam.target = {  std::clamp((float)position->x + 16, (float)(SCREEN_WIDTH/4), (float)((t->w*32) - SCREEN_WIDTH/4)),
+    player->cam.target = {  std::clamp((float)position->x + 16, (float)(SCREEN_WIDTH/4), (float)((t->w*32) - SCREEN_WIDTH/4)),
                             std::clamp((float)position->y + 16, (float)(SCREEN_HEIGHT/4), (float)((t->h*32) - SCREEN_HEIGHT/4))};
 
 
