@@ -3,7 +3,10 @@
 
 #include <cstdint>
 #include <tuple>
+#include <unordered_set>
 #include "texture_store.hpp"
+
+struct EntityId;
 
 typedef uint64_t tileId;
 
@@ -11,7 +14,6 @@ typedef uint64_t tileId;
 #define RIGHT (1 << 1)
 #define BOTTOM (1 << 2)
 #define LEFT (1 << 3)
-
 
 struct TileDefinition{
     tileId tileId;
@@ -35,6 +37,9 @@ public:
 
     std::vector<tileId> tiles;
     std::vector<char> autotiles_bitmap;
+
+    std::vector<std::vector<EntityId>> entities;
+
     uint64_t w, h;
     
     tileId brush;
@@ -51,6 +56,12 @@ public:
     char GetAutotileBitmap(uint64_t x, uint64_t y);
 
     TileDefinition GetTileDefinition(tileId id);
+
+    std::vector<EntityId>& GetEntitiesOnTile(uint64_t x, uint64_t y);
+
+    void InsertEntityOnTile(uint64_t x, uint64_t y, EntityId id);
+
+    void RemoveEntityFromTile(uint64_t x, uint64_t y, EntityId id);
 
     void Save(std::string path);
     void Load(std::string path);

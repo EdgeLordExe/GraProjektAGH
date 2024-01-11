@@ -6,6 +6,8 @@
 #include "entity.hpp"
 #include "texture_store.hpp"
 
+void MoveAndSlide(EntityId id,Vector2 velocity);
+
 class PlayerComponent : public Component{
 public:
     PlayerComponent();
@@ -25,6 +27,8 @@ public:
 class PositionComponent : public Component{
 public:
     PositionComponent(uint64_t xpos, uint64_t ypos,int collider_width, int collider_height);
+
+
 
     virtual void ParseSignal(std::string signal, std::vector<std::any> values) override {};
 
