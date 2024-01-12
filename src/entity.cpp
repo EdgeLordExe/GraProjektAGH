@@ -109,7 +109,7 @@ void ECS::Init(){
 
 
     EntityBuilder().AddComponent(new DrawComponent("assets/textures/ogr.png"))
-                   .AddComponent(new PositionComponent(100,100,8,16,9,8))
+                   .AddComponent(new PositionComponent(100,100,8,16,8,8))
                    .AddComponent(new MonsterComponent())
                    .Build();
 

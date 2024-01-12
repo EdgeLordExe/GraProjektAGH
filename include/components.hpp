@@ -8,14 +8,6 @@
 #include "texture_store.hpp"
 #include "weapons.hpp"
 
-void MoveAndSlide(EntityId id,Vector2 velocity);
-
-void MoveAndSlide(EntityId id,Vector2 velocity, bool collide_with_entities);
-
-void MoveAndSlide(EntityId id,Vector2 velocity, bool collide_with_entities, bool del_on_hit);
-
-void MoveAndSlide(EntityId id,Vector2 velocity, bool collide_with_entities, bool del_on_hit, uint64_t ignore_entities_with_components);
-
 class PlayerComponent : public Component{
 public:
     PlayerComponent();
