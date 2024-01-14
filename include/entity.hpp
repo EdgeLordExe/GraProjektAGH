@@ -36,6 +36,9 @@ enum State{
 #define COMP_INSPECT    (1 << 3)
 #define COMP_BULLET     (1 << 4)
 #define COMP_OGR        (1 << 5)
+#define COMP_LUCZNIK    (1 << 6)
+#define COMP_BIEGACZ    (1 << 7)
+#define COMP_TANK       (1 << 8)
 
 class Component
 {

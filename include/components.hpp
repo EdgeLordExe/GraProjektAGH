@@ -35,6 +35,35 @@ class MonsterComponent : public Component{
 
 };
 
+class LucznikComponent : public Component{
+    public:
+    LucznikComponent();
+    double movement_speed = 1.8;
+
+    int max_health = 6;
+    int current_health = 6;
+
+    int range = 100;
+};
+
+class BiegaczComponent : public Component{
+    public:
+    BiegaczComponent();
+    double movement_speed = 3.1;
+
+    int max_health = 1;
+    int current_health = 1;
+};
+
+class Tank : public Component{
+    public:
+    TankComponent();
+    double movement_speed = 0.2;
+
+    int max_health = 25;
+    int current_health = 25;
+};
+
 class PositionComponent : public Component{
 public:
     PositionComponent(uint64_t xpos, uint64_t ypos,int collider_width, int collider_height, int collider_x_offset, int collider_y_offset);
@@ -68,10 +97,21 @@ class DrawSystem : public System{
 
 class PlayerSystem : public System{
     virtual void Run() override;
-
 };
 
 class MonsterSystem : public System{
+    virtual void Run() override;
+};
+
+class LucznikSystem : public System{
+    virtual void Run() override;
+};
+
+class BiegaczSystem : public System{
+    virtual void Run() override;
+};
+
+class TankSystem : public System{
     virtual void Run() override;
 };
 
