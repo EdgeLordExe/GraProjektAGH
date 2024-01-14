@@ -81,10 +81,13 @@ sigreturn EntityId::SendSignal(std::string signal_name,std::vector<std::any> val
     Entity* entity = ECS::instance()->GetEntity(*this);
     sigreturn b = 0;
     for(int i = 0; i < ecs->component_store.size(); i ++){
-        int flag = (0 << i);
-        if(flag & entity->component_flags == flag){
-            b |= ecs->component_store[FLAG2NUM(flag)][id]->ParseSignal(signal_name,values);
-        }
+        int flag = (1 << i);
+        Component* comp = GetComponent(flag);
+        if(comp == nullptr){
+            continue;
+            }
+        b |= comp->ParseSignal(signal_name,values);
+        
     }
     return b;
 }
@@ -114,12 +117,12 @@ void ECS::Init(){
     InsertSystem(new BulletSystem());
     InsertSystem(new MonsterSystem());
     //TO MUSI BYC ZAWSZE OSTATNIE ZAUFAJCIE MI
-    InsertSystem(new DrawSystem());
+
     InsertSystem(new LucznikSystem());
     InsertSystem(new BiegaczSystem());
     InsertSystem(new TankSystem());
-
- 
+    InsertSystem(new DamageableSystem());
+    InsertSystem(new DrawSystem()); // TO JEST ZAWSZE OSTATNI SYSTEM, WIEC JAK DODAJESZ NOWY, TO MUSISZ DAC SWOJ NOWY SYSTEM TAK JAKBY NAD NIM, DrawSystem() ZAWSZE MUSI BYC OSTATNI!!!!!!!
 
     EntityBuilder().AddComponent(new DrawComponent("assets/textures/player.png"))
                    .AddComponent(new PositionComponent(50,50,8,16,16,16))
