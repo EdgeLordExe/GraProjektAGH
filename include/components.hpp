@@ -38,9 +38,7 @@ class MonsterComponent : public Component{
 class PositionComponent : public Component{
 public:
     PositionComponent(uint64_t xpos, uint64_t ypos,int collider_width, int collider_height, int collider_x_offset, int collider_y_offset);
-
-
-
+    
     virtual void ParseSignal(std::string signal, std::vector<std::any> values) override {};
 
     double x;
@@ -61,6 +59,10 @@ public:
 };
 
 class DrawSystem : public System{
+    
+    void DrawMainMenu();
+    void DrawGame();
+    void DrawConsole();
     virtual void Run() override;
 };
 
@@ -99,6 +101,10 @@ class BulletComponent : public Component{
 };
 
 class BulletSystem: public System{
+    virtual void Run() override;
+};
+
+class DebugSystem: public System{
     virtual void Run() override;
 };
 

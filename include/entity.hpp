@@ -21,7 +21,10 @@ typedef uint64_t entityId;
 
 enum State{
     PLAY,
-    CONSOLE
+    CONSOLE,
+    MAIN_MENU,
+    MAIN_MENU_OPTIONS,
+    MAIN_MENU_PLAY
 };
 
 
@@ -135,6 +138,7 @@ class ECS{
         Camera2D cam;
 
         void SwitchState(State newstate){
+            //std::cout << "Switching gamestate to " << newstate << std::endl;
             gamestate = newstate;
         };
 
@@ -146,19 +150,21 @@ class ECS{
         bool show_hitbox = false;
         std::vector<Rectangle> debug_rectangles;
 
+        bool windowExit = false;
 
     private: 
 
         ECS(){};
         static ECS* self;
 
-        State gamestate;
+        State gamestate = State::MAIN_MENU;
 
         std::vector<EntityId> mrkd_for_del;
         std::vector<Entity> entities;
         std::vector<entityId> free_ids;
         std::vector<std::unique_ptr<System>> systems;
-       
+
+        
 
         void DeleteMarkedEntities();
 };

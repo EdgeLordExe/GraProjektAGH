@@ -92,7 +92,7 @@ void ECS::Init(){
     weapon_registry->RegisterWeapon(new WeaponShotgun());
 
     IncrementComponentStore(6);
-
+    InsertSystem(new DebugSystem());
     InsertSystem(new PlayerSystem());
     InsertSystem(new BulletSystem());
     InsertSystem(new MonsterSystem());

@@ -35,7 +35,53 @@ PositionComponent::PositionComponent(uint64_t xpos, uint64_t ypos, int collider_
 
 void DrawSystem::Run(){
     ECS* ecs = ECS::instance();
+    BeginDrawing();
+    ClearBackground(WHITE);
+    switch(ecs->GetState()){
+        case State::PLAY:
+            DrawGame();
+        break;
+        case State::CONSOLE:
+            DrawConsole();
+        break;
+        case State::MAIN_MENU:
+            DrawMainMenu();
+        break;
+    }
+    EndDrawing();
+}
+
+void DrawSystem::DrawMainMenu(){
     TextureStore* txt = TextureStore::instance();
+    DrawTexture(txt->GetTexture(txt->LoadTextureWithPath("assets/textures/bg_menu.png")),0,0,WHITE);
+    DrawTexture(txt->GetTexture(txt->LoadTextureWithPath("assets/textures/menu_begin.png")),0,0,WHITE);
+    DrawTexture(txt->GetTexture(txt->LoadTextureWithPath("assets/textures/menu_exit.png")),0,0,WHITE);
+    //DrawTexture(txt->GetTexture(txt->LoadTextureWithPath("assets/textures/bg_options.png")),0,0,WHITE);
+  
+    if(!IsMouseButtonPressed(MOUSE_BUTTON_LEFT)){
+        return;
+    }
+    Vector2 mpos = GetMousePosition();
+    ECS* ecs = ECS::instance();
+    if(mpos.x >= 397 && mpos.x <= 882 && mpos.y >= 301 && mpos.y <= 407){
+        ecs->SwitchState(State::PLAY);
+        return;
+    }
+    if(mpos.x >= 397 && mpos.x <= 882 && mpos.y >= 552 && mpos.y <= 659){
+        ecs->windowExit = true;
+        return;
+    }
+}
+
+void DrawSystem::DrawConsole(){
+    ECS* ecs = ECS::instance();
+    ecs->console->Draw();
+}
+
+void DrawSystem::DrawGame(){
+    ECS* ecs = ECS::instance();
+    TextureStore* txt = TextureStore::instance();
+
     auto queried = ecs->Query(COMP_DRAWABLE | COMP_POSITION);
     if(!queried.size()){
         return;
@@ -50,8 +96,7 @@ void DrawSystem::Run(){
     auto* player_comp = static_cast<PlayerComponent*>( player.GetComponent(COMP_PLAYER));
 
 
-    BeginDrawing();
-    ClearBackground(WHITE);
+    
     BeginMode2D(ecs->cam);
     for(int x = 0; x < ecs->tilemap->w; x ++){
         for(int y = 0; y < ecs->tilemap->h; y ++){
@@ -89,15 +134,26 @@ void DrawSystem::Run(){
     }
     
     EndMode2D();
-    ecs->console->Draw();
-    //Miejsce na UI
 
-    EndDrawing();
+    //Miejsce na UI
+}
+
+void DebugSystem::Run(){
+    ECS* ecs = ECS::instance();
+     if(IsKeyPressed(KEY_GRAVE)){
+        if(ecs->GetState() == State::PLAY){
+            ecs->SwitchState(State::CONSOLE);
+        } else {
+            ecs->SwitchState(State::PLAY);
+        }
+    }
 }
 
 void PlayerSystem::Run(){
     ECS* ecs = ECS::instance();
-    if(ecs->GetState() != State::PLAY){
+    auto state = ecs->GetState();
+   
+    if(state != State::PLAY){
         return;
     }
     auto queried = ecs->Query(COMP_PLAYER | COMP_POSITION);

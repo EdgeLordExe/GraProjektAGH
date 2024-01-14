@@ -7,20 +7,8 @@
 
 void Console::Draw(){
     ECS* ecs = ECS::instance();
-    if(IsKeyPressed(KEY_GRAVE)){
-        toggled = !toggled;
-        if(toggled){
-            ecs->SwitchState(State::CONSOLE);
-        } else {
-            ecs->SwitchState(State::PLAY);
-        }
-    }
-    if(!toggled){
-        return;
-    }
-    char c = 0;
 
-        
+    char c = 0; 
     auto key = GetKeyPressed();
     if(key == KEY_GRAVE){
         key = GetKeyPressed();
