@@ -1,7 +1,10 @@
 #include <cmath>
 #include <algorithm>
+#include <optional>
+#include <tuple>
 #include "helpers.hpp"
 #include "components.hpp"
+
 
 
 Vector2 GetMousePositionInWorld(){
@@ -32,7 +35,7 @@ void MoveAndSlide(EntityId id,Vector2 velocity, bool collide_with_entities,bool 
     int tiley = position->y /32;
     //std::cout << "x : " << position->x  << " y :" << position->y << std::endl;
 
-    std::vector<Rectangle> collisions;
+    std::vector<std::tuple<Rectangle,std::optional<EntityId>>> collisions;
     std::unique_ptr<Tilemap>& t = ecs->tilemap;
     for(int i = -1; i <= 1; i ++){
         for(int k = -1 ; k <= 1; k ++){
@@ -47,7 +50,7 @@ void MoveAndSlide(EntityId id,Vector2 velocity, bool collide_with_entities,bool 
                 r.y = (tiley + k) * 32;
                 r.width = 32;
                 r.height = 32;
-                collisions.push_back(r);
+                collisions.push_back(std::make_tuple(r,std::nullopt));
             } 
             if(!collide_with_entities){
                 continue;
@@ -64,11 +67,12 @@ void MoveAndSlide(EntityId id,Vector2 velocity, bool collide_with_entities,bool 
                     continue; // nie kolidujemy z samym soba!
                 }
                 if(ignore_entities_with_components != 0 && e.HasOneOfComponents(ignore_entities_with_components)){
+                    //std::cout << "ignoring : " << e.id << std::endl;
                     continue;
                 }
                 //std::cout << "ADDING TO LIST AN ENTITY WOO HOO!" << std::endl;
                 auto* epos = static_cast<PositionComponent*>( e.GetComponent(COMP_POSITION));
-                collisions.push_back(epos->collision_box);
+                collisions.push_back(std::make_tuple(epos->collision_box,e));
             }
         }
     }
@@ -79,24 +83,50 @@ void MoveAndSlide(EntityId id,Vector2 velocity, bool collide_with_entities,bool 
     xcollision.x += velocity.x;
     ycollision.y += velocity.y;
 
-    for(Rectangle r : collisions){
+    for(auto tuple_r : collisions){
+        Rectangle r = std::get<0>(tuple_r);
         if(CheckCollisionRecs(r,xcollision)){
             //std::cout << "COLLIDED!" << std::endl;
             //ecs->debug_rectangles.push_back(r);
             ecs->debug_rectangles.push_back(xcollision);
-            velocity.x = 0;
-            if(del_on_hit){
+            
+            bool penetrate = false;
+            if(std::get<1>(tuple_r) != std::nullopt){
+                penetrate = id.SendSignal(SIGNAL_COLLIDE,{std::get<1>(tuple_r)}) & SIGRETURN_COLLIDE_PENETRATE;
+            }
+
+            if(!penetrate){
+                velocity.x = 0;
+            }
+
+            if(del_on_hit && !penetrate){
                 t->RemoveEntityFromTile(tilex,tiley,id);
+                if(ecs->show_hitbox){
+                    ecs->debug_rectangles_persistent.push_back(xcollision);
+                }
                 id.Del();
             }
         }
+
         if(CheckCollisionRecs(r,ycollision)){
             //std::cout << "COLLIDED!" << std::endl;
             //ecs->debug_rectangles.push_back(r);
             ecs->debug_rectangles.push_back(ycollision);
-            velocity.y = 0;
-            if(del_on_hit){
+            
+            bool penetrate = false;
+            if(std::get<1>(tuple_r) != std::nullopt){
+                penetrate = id.SendSignal(SIGNAL_COLLIDE,{std::get<1>(tuple_r)}) & SIGRETURN_COLLIDE_PENETRATE;
+            }
+
+            if(!penetrate){
+                velocity.y = 0;
+            }
+            
+            if(del_on_hit && !penetrate){
                 t->RemoveEntityFromTile(tilex,tiley,id);
+                if(ecs->show_hitbox){
+                    ecs->debug_rectangles_persistent.push_back(ycollision);
+                }
                 id.Del();
             }
         }

@@ -143,6 +143,9 @@ void DrawSystem::DrawGame(){
         for(Rectangle r : ecs->debug_rectangles){
             DrawRectangle(r.x,r.y,r.width,r.height,GREEN);
         }
+        for(Rectangle r : ecs->debug_rectangles_persistent){
+            DrawRectangle(r.x,r.y,r.width,r.height,PURPLE);
+        }
     }
     
     EndMode2D();
@@ -220,8 +223,34 @@ void PlayerSystem::Run(){
 
 }
 
-BulletComponent::BulletComponent(float angle, int damage, float speed, int range) : angle(angle), damage(damage), speed(speed), range(range){
+BulletComponent::BulletComponent(float angle, int damage, float speed, int range, bool penetration, int pen_max_mobs)
+ : angle(angle), damage(damage), speed(speed), range(range), penetration(penetration), penetration_max_mobs_hit(pen_max_mobs){
     component_id = COMP_BULLET;
+}
+
+sigreturn BulletComponent::ParseSignal(std::string signal, std::vector<std::any> values){
+    std::cout << "WORKS" << signal << std::endl;
+    if(signal.compare(SIGNAL_COLLIDE) != 0){
+        return 0;
+    }
+    EntityId id = std::any_cast<EntityId>(values[0]);
+    if(hit_mobs.contains(id.id)){
+        return SIGRETURN_COLLIDE_PENETRATE;
+    }
+    std::cout << "sending damage:" << damage << " to " << id.id << std::endl;
+    id.SendSignal(SIGNAL_HIT,{damage});
+    hit_mobs.insert(id.id);
+
+    if(!penetration){
+        return 0;
+    }
+
+    if(penetration_mobs_hit >= penetration_mobs_hit){
+        return 0;
+    }
+
+    penetration_mobs_hit++;
+    return SIGRETURN_COLLIDE_PENETRATE;
 }
 
 void BulletSystem::Run(){
@@ -358,3 +387,36 @@ void TankSystem::Run(){
     //std::cout << "vel.x : " << vel.x << " vel.y :" << vel.y << std::endl;
     MoveAndSlide(tankEntityId,vel);
 }  
+
+void DamageableSystem::Run(){
+    ECS* ecs = ECS::instance();
+    if(ecs->GetState() != State::PLAY){
+        return;
+    }
+    auto q = ecs->Query(COMP_DAMAGEABLE);
+    if(!q.size()){
+        return;
+    }
+    for(auto entityId : q){
+        DamagableComponent* d = static_cast<DamagableComponent*>( entityId.GetComponent(COMP_DAMAGEABLE));
+        if(d->current_health <= 0){
+            entityId.Del();
+        }
+    }
+}
+
+DamagableComponent::DamagableComponent(int max_health){
+    component_id = COMP_DAMAGEABLE;
+    current_health = max_health;
+}
+
+sigreturn DamagableComponent::ParseSignal(std::string signal, std::vector<std::any> values){
+    if(signal.compare(SIGNAL_HIT) != 0){
+        return 0 ;
+    }
+
+    int damage = std::any_cast<int>(values[0]);
+    current_health -= damage;
+    return 0;
+}
+

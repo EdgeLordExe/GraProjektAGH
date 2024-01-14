@@ -73,6 +73,22 @@ void EntityId::RemoveComponent(uint64_t compid){
 }
 
 
+sigreturn EntityId::SendSignal(std::string signal_name,std::vector<std::any> values){
+    if(!IsValid()){
+        return false;
+    }
+    ECS* ecs = ECS::instance();
+    Entity* entity = ECS::instance()->GetEntity(*this);
+    sigreturn b = 0;
+    for(int i = 0; i < ecs->component_store.size(); i ++){
+        int flag = (0 << i);
+        if(flag & entity->component_flags == flag){
+            b |= ecs->component_store[FLAG2NUM(flag)][id]->ParseSignal(signal_name,values);
+        }
+    }
+    return b;
+}
+
 /// ECS
 
 void ECS::Init(){
@@ -91,7 +107,7 @@ void ECS::Init(){
     weapon_registry->RegisterWeapon(new WeaponMinigun());
     weapon_registry->RegisterWeapon(new WeaponShotgun());
 
-    IncrementComponentStore(9);
+    IncrementComponentStore(10);
 
     InsertSystem(new DebugSystem());
     InsertSystem(new PlayerSystem());
@@ -115,21 +131,25 @@ void ECS::Init(){
     EntityBuilder().AddComponent(new DrawComponent("assets/textures/ogr.png"))
                    .AddComponent(new PositionComponent(100,100,8,16,16,16))
                    .AddComponent(new MonsterComponent())
+                   .AddComponent(new DamagableComponent(10))
                    .Build();
 
     EntityBuilder().AddComponent(new DrawComponent("assets/textures/lucznik.png"))
                    .AddComponent(new PositionComponent(120,120,8,16,16,16))
                    .AddComponent(new LucznikComponent())
+                   .AddComponent(new DamagableComponent(6))
                    .Build();
 
     EntityBuilder().AddComponent(new DrawComponent("assets/textures/biegacz.png"))
                    .AddComponent(new PositionComponent(140,120,8,16,16,16))
                    .AddComponent(new BiegaczComponent())
+                   .AddComponent(new DamagableComponent(1))
                    .Build();
         
     EntityBuilder().AddComponent(new DrawComponent("assets/textures/tank.png"))
                    .AddComponent(new PositionComponent(200,120,16,32,32,32))
                    .AddComponent(new TankComponent())
+                   .AddComponent(new DamagableComponent(25))
                    .Build();
 
 }

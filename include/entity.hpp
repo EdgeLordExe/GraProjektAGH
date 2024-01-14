@@ -13,6 +13,7 @@
 #include <string>
 #include <any>
 
+
 #include "tilemap.hpp"
 #include "console.hpp"
 #include "weapons.hpp"
@@ -39,13 +40,18 @@ enum State{
 #define COMP_LUCZNIK    (1 << 6)
 #define COMP_BIEGACZ    (1 << 7)
 #define COMP_TANK       (1 << 8)
+#define COMP_DAMAGEABLE (1 << 9)
+
+#define SIGRETURN_COLLIDE_PENETRATE (1 << 0);
+
+typedef uint64_t sigreturn;
 
 class Component
 {
 public:
     Component();
     virtual ~Component();
-    virtual void ParseSignal(std::string signal, std::vector<std::any> values){};
+    virtual sigreturn ParseSignal(std::string signal, std::vector<std::any> values){return 0;};
     uint64_t GetId(){
         return component_id;
     }
@@ -81,6 +87,8 @@ struct EntityId{
 
     uint64_t AddComponent(Component* comp);
     void RemoveComponent(uint64_t compid);
+
+    sigreturn SendSignal(std::string signal_name,std::vector<std::any> values);
 };
 
 struct Entity{
@@ -152,6 +160,7 @@ class ECS{
         //DEBUG VARIABLES
         bool show_hitbox = false;
         std::vector<Rectangle> debug_rectangles;
+        std::vector<Rectangle> debug_rectangles_persistent;
 
         bool windowExit = false;
 

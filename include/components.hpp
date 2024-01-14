@@ -4,9 +4,13 @@
 #include <raylib.h>
 #include <unordered_map>
 #include <optional>
+#include <set>
 #include "entity.hpp"
 #include "texture_store.hpp"
 #include "weapons.hpp"
+
+#define SIGNAL_HIT      "hit"
+#define SIGNAL_COLLIDE  "collide"
 
 class PlayerComponent : public Component{
 public:
@@ -25,23 +29,25 @@ public:
     std::optional<weaponId> current_weapon = 0;
 };
 
+class DamagableComponent: public Component{
+    public:
+    DamagableComponent(int max_health);
+    virtual sigreturn ParseSignal(std::string signal, std::vector<std::any> values) override;
+
+    int current_health;
+};
+
 class MonsterComponent : public Component{
     public:
     MonsterComponent();
     double movement_speed = 1.0;
     
-    int max_health = 10;
-    int current_health = 10;
-
 };
 
 class LucznikComponent : public Component{
     public:
     LucznikComponent();
     double movement_speed = 1.8;
-
-    int max_health = 6;
-    int current_health = 6;
 
     int range = 100;
 };
@@ -51,25 +57,19 @@ class BiegaczComponent : public Component{
     BiegaczComponent();
     double movement_speed = 3.1;
 
-    int max_health = 1;
-    int current_health = 1;
 };
 
-class Tank : public Component{
+class TankComponent : public Component{
     public:
     TankComponent();
     double movement_speed = 0.2;
 
-    int max_health = 25;
-    int current_health = 25;
 };
 
 class PositionComponent : public Component{
 public:
     PositionComponent(uint64_t xpos, uint64_t ypos,int collider_width, int collider_height, int collider_x_offset, int collider_y_offset);
     
-    virtual void ParseSignal(std::string signal, std::vector<std::any> values) override {};
-
     double x;
     double y;
     Rectangle collision_box;
@@ -81,7 +81,6 @@ class DrawComponent : public Component{
 public:
     DrawComponent( std::string path);
     DrawComponent( std::string path, float rotation);
-    virtual void ParseSignal(std::string signal, std::vector<std::any> values) override {};
 
     textureId text;
     float rotation;
@@ -131,13 +130,18 @@ class InspectComponent : public Component{
 
 class BulletComponent : public Component{
     public:
-    BulletComponent(float angle, int damage, float speed, int range);
+    BulletComponent(float angle, int damage, float speed, int range, bool penetration, int pen_max_mobs);
+    virtual sigreturn ParseSignal(std::string signal, std::vector<std::any> values) override;
 
     float angle;
     int damage;
     float speed;
     int range;
     int travelled_range = 0;
+    bool penetration = false;
+    int penetration_mobs_hit = 0;
+    int penetration_max_mobs_hit = 0;
+    std::set<entityId> hit_mobs;
 };
 
 class BulletSystem: public System{
@@ -145,6 +149,10 @@ class BulletSystem: public System{
 };
 
 class DebugSystem: public System{
+    virtual void Run() override;
+};
+
+class DamageableSystem: public System{
     virtual void Run() override;
 };
 

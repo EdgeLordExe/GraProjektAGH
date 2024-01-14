@@ -38,6 +38,9 @@ class WeaponSimpleGun : public Weapon{
     int bullet_x_offset;
     int bullet_y_offset;
 
+    bool bullet_penetration;
+    int bullet_max_mobs_penetrated;
+
     std::string bullet_texture;
     WeaponSimpleGun(){
         automatic = false;
@@ -53,6 +56,8 @@ class WeaponSimpleGun : public Weapon{
         bullet_texture = "assets/textures/bullet.png";
         bullet_x_offset = 2;
         bullet_y_offset = 2;
+        bullet_penetration = false;
+        bullet_max_mobs_penetrated = 0;
     }
 
     
@@ -72,6 +77,8 @@ class WeaponShotgun : public WeaponSimpleGun{
         bullet_range_variation = 32;
         bullet_speed = 10;
         bullet_speed_variation = 4;
+        bullet_penetration = false;
+        bullet_max_mobs_penetrated = 0;
     }
    
 };
@@ -87,6 +94,8 @@ class WeaponMinigun : public WeaponSimpleGun{
         bullet_range_variation = 32;
         bullet_speed = 12;
         bullet_speed_variation = 1;
+        bullet_penetration = false;
+        bullet_max_mobs_penetrated = 0;
     }
 };
 
@@ -104,6 +113,8 @@ class WeaponCrossbow : public WeaponSimpleGun{
         bullet_texture = "assets/textures/bolt.png";
         bullet_x_offset = 4;
         bullet_y_offset = 4;
+        bullet_penetration = true;
+        bullet_max_mobs_penetrated = 5;
     }
 };
 
