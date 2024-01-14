@@ -91,13 +91,16 @@ void ECS::Init(){
     weapon_registry->RegisterWeapon(new WeaponMinigun());
     weapon_registry->RegisterWeapon(new WeaponShotgun());
 
-    IncrementComponentStore(6);
+    IncrementComponentStore(9);
 
     InsertSystem(new PlayerSystem());
     InsertSystem(new BulletSystem());
     InsertSystem(new MonsterSystem());
     //TO MUSI BYC ZAWSZE OSTATNIE ZAUFAJCIE MI
     InsertSystem(new DrawSystem());
+    InsertSystem(new LucznikSystem());
+    InsertSystem(new BiegaczSystem());
+    InsertSystem(new TankSystem());
 
  
 
@@ -109,8 +112,23 @@ void ECS::Init(){
 
 
     EntityBuilder().AddComponent(new DrawComponent("assets/textures/ogr.png"))
-                   .AddComponent(new PositionComponent(100,100,8,16,8,8))
+                   .AddComponent(new PositionComponent(100,100,8,16,16,16))
                    .AddComponent(new MonsterComponent())
+                   .Build();
+
+    EntityBuilder().AddComponent(new DrawComponent("assets/textures/lucznik.png"))
+                   .AddComponent(new PositionComponent(120,120,8,16,16,16))
+                   .AddComponent(new LucznikComponent())
+                   .Build();
+
+    EntityBuilder().AddComponent(new DrawComponent("assets/textures/biegacz.png"))
+                   .AddComponent(new PositionComponent(140,120,8,16,16,16))
+                   .AddComponent(new BiegaczComponent())
+                   .Build();
+        
+    EntityBuilder().AddComponent(new DrawComponent("assets/textures/tank.png"))
+                   .AddComponent(new PositionComponent(200,120,16,32,32,32))
+                   .AddComponent(new TankComponent())
                    .Build();
 
 }
