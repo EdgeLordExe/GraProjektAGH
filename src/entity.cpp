@@ -131,35 +131,18 @@ void ECS::Init(){
                    .AddComponent(new PositionComponent(2048,2048,8,16,16,16))
                    .AddComponent(new PlayerComponent())
                    .Build();
-
-
-
-    EntityBuilder().AddComponent(new DrawComponent("assets/textures/ogr.png"))
-                   .AddComponent(new PositionComponent(RandomPositionX(),RandomPositionY(),8,16,16,16))
-                   .AddComponent(new MonsterComponent())
-                   .AddComponent(new DamagableComponent(10))
-                   .Build();
-
-    EntityBuilder().AddComponent(new DrawComponent("assets/textures/lucznik.png"))
-                   .AddComponent(new PositionComponent(RandomPositionX(),RandomPositionY(),8,16,16,16))
-                   .AddComponent(new LucznikComponent())
-                   .AddComponent(new DamagableComponent(6))
-                   .Build();
-
-    EntityBuilder().AddComponent(new DrawComponent("assets/textures/biegacz.png"))
-                   .AddComponent(new PositionComponent(RandomPositionX(),RandomPositionY(),8,16,16,16))
-                   .AddComponent(new BiegaczComponent())
-                   .AddComponent(new DamagableComponent(1))
-                   .Build();
-        
-    EntityBuilder().AddComponent(new DrawComponent("assets/textures/tank.png"))
-                   .AddComponent(new PositionComponent(RandomPositionX(),RandomPositionY(),16,32,32,32))
-                   .AddComponent(new TankComponent())
-                   .AddComponent(new DamagableComponent(25))
-                   .Build();
-
 }
 
+void ECS::Reset(){
+    for(auto& entity : entities){
+        entity.getSafeId().Del();
+    }
+    DeleteMarkedEntities();
+    EntityBuilder().AddComponent(new DrawComponent("assets/textures/player.png"))
+                .AddComponent(new PositionComponent(2048,2048,8,16,16,16))
+                .AddComponent(new PlayerComponent())
+                .Build();
+}
 /*
     Ta funkcja jest bardzo niebezpieczna, NIGDY nie powinienes zachowywac dlugotrwales kopii wskaznika do Entity
     Jezeli dany obieky zostanie usuniety to wtedy ten pointer będzie nie wazny. To jest tylko do tymczasowego odzyskania jakis danych.

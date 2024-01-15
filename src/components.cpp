@@ -81,8 +81,28 @@ void DrawSystem::Run(){
         case State::MAIN_MENU_PLAY:
             DrawMainMenuPlay();
         break;
+        case State::GAME_OVER:
+            DrawGame();
+            DrawGameOver();
+        break;
     }
     EndDrawing();
+}
+
+void DrawSystem::DrawGameOver(){
+    TextureStore* txt = TextureStore::instance();
+    DrawTexture(txt->GetTexture(txt->LoadTextureWithPath("assets/textures/death_menu.png")),0,0,WHITE);
+    if(!IsMouseButtonPressed(MOUSE_BUTTON_LEFT)){
+        return;
+    }
+    Vector2 mpos = GetMousePosition();
+    ECS* ecs = ECS::instance();
+    if(mpos.x >= 462 && mpos.x <= 816 && mpos.y >= 499 && mpos.y <= 576){
+        ecs->Reset();
+        ecs->SwitchState(State::MAIN_MENU);
+        return;
+    }
+
 }
 
 void DrawSystem::DrawMainMenuPlay(){
@@ -95,7 +115,6 @@ void DrawSystem::DrawMainMenuPlay(){
         return;
     }
     Vector2 mpos = GetMousePosition();
-    std::cout << "X : " << mpos.x << "Y :" << mpos.y << std::endl;
     ECS* ecs = ECS::instance();
     auto* pcomp = static_cast<PlayerComponent*>(ecs->Query(COMP_PLAYER)[0].GetComponent(COMP_PLAYER));
     if(mpos.x >= 867 && mpos.x <= 1153 && mpos.y >= 217 && mpos.y <= 502){
@@ -244,6 +263,9 @@ void PlayerSystem::Run(){
     //I bierzemy jego pozycje!
     PositionComponent* position = static_cast<PositionComponent*>( entityId.GetComponent(COMP_POSITION));
     PlayerComponent* player = static_cast<PlayerComponent*>( entityId.GetComponent(COMP_PLAYER));
+    if(player->current_health <= 0){
+        ecs->SwitchState(State::GAME_OVER);
+    }
     std::unique_ptr<Tilemap>& t = ecs->tilemap;
     int dh = IsKeyDown(KEY_D) - IsKeyDown(KEY_A);
     int dv = IsKeyDown(KEY_S) - IsKeyDown(KEY_W);
@@ -401,7 +423,7 @@ void LucznikSystem::Run(){
                 lucznik->arrow_timer = 0;
                 EntityBuilder().AddComponent(new DrawComponent("assets/textures/arrow.png",(kat * 360 )/ (2 * PI)))
                         .AddComponent(new PositionComponent(lucznikPosition->x,lucznikPosition->y,4,4,2,2))
-                        .AddComponent(new BulletComponent(kat,1,2 ,512,false,0,COMP_LUCZNIK | COMP_BIEGACZ | COMP_OGR | COMP_TANK))
+                        .AddComponent(new BulletComponent(kat,1,6 ,512,false,0,COMP_LUCZNIK | COMP_BIEGACZ | COMP_OGR | COMP_TANK))
                         .Build();
                 }
             }
@@ -518,7 +540,6 @@ void EntityGeneratorSystem::Run(){
     if (timer >= 2.5 * 60 && healthgracz != 0) {
             Vector2 s = ecs->tilemap->GetSafeSpawnPosition();
             int spawn = rand() % 4;
-            std::cout << spawn << std::endl;
             if(spawn == 0){
                 EntityBuilder().AddComponent(new DrawComponent("assets/textures/ogr.png"))
                     .AddComponent(new PositionComponent(s.x,s.y,8,16,16,16))

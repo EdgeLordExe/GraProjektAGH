@@ -96,6 +96,7 @@ class DrawSystem : public System{
     void DrawMainMenuPlay();
     void DrawGame();
     void DrawConsole();
+    void DrawGameOver();
     virtual void Run() override;
 };
 

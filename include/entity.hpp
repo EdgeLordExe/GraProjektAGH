@@ -25,7 +25,8 @@ enum State{
     CONSOLE,
     MAIN_MENU,
     MAIN_MENU_OPTIONS,
-    MAIN_MENU_PLAY
+    MAIN_MENU_PLAY,
+    GAME_OVER
 };
 
 
@@ -121,6 +122,7 @@ class ECS{
 
         Entity* GetEntity(EntityId id);
 
+        void Reset();
         void Init();
         void Tick();
 
