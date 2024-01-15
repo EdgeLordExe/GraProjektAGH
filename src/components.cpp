@@ -435,7 +435,7 @@ void EntityGeneratorSystem::Run(){
     int bonus_timer = 0;
 
     while(lvl != 0.1){
-        for (timer = 0; timer = 3600; timer++) {
+        for (timer = 0; timer <= 3600; timer++) {
             bonus_timer++;
             if (bonus_timer >= 15*lvl*60){
                 EntityBuilder().AddComponent(new DrawComponent("assets/textures/ogr.png"))
