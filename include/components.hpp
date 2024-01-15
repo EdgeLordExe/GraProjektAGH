@@ -158,6 +158,8 @@ class DamageableSystem: public System{
 
 class EntityGeneratorSystem: public System{
     virtual void Run() override;
+
+    int timer = 0;
 };
 
 #endif
