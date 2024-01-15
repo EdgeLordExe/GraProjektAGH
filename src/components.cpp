@@ -202,6 +202,11 @@ void DrawSystem::DrawGame(){
     
     EndMode2D();
 
+    for(int i = 0 ; i < player_comp->current_health; i ++){
+        Vector2 pos = {i * 68 , 16};
+        DrawTextureEx(txt->GetTexture(txt->LoadTextureWithPath("assets/textures/heart.png")),pos,0,2,WHITE);
+    }
+
     //Miejsce na UI
 }
 
@@ -502,35 +507,46 @@ sigreturn DamagableComponent::ParseSignal(std::string signal, std::vector<std::a
 
 void EntityGeneratorSystem::Run(){
     ECS* ecs = ECS::instance();
+    if(ecs->GetState() != State::PLAY){
+        return;
+    }
     timer++;
     auto queriedPlayer = ecs->Query(COMP_PLAYER);
     auto playerEntityId = queriedPlayer[0];
     auto playerHealth = static_cast<PlayerComponent*>(playerEntityId.GetComponent(COMP_PLAYER));
     int healthgracz = playerHealth->current_health;
-    if (timer >= 10 * 60 && healthgracz != 0) {
+    if (timer >= 2.5 * 60 && healthgracz != 0) {
+            Vector2 s = ecs->tilemap->GetSafeSpawnPosition();
+            int spawn = rand() % 4;
+            std::cout << spawn << std::endl;
+            if(spawn == 0){
                 EntityBuilder().AddComponent(new DrawComponent("assets/textures/ogr.png"))
-                   .AddComponent(new PositionComponent(RandomPositionX(),RandomPositionY(),8,16,16,16))
-                   .AddComponent(new MonsterComponent())
-                   .AddComponent(new DamagableComponent(10))
-                   .Build();
-
-    EntityBuilder().AddComponent(new DrawComponent("assets/textures/lucznik.png"))
-                   .AddComponent(new PositionComponent(RandomPositionX(),RandomPositionY(),8,16,16,16))
-                   .AddComponent(new LucznikComponent())
-                   .AddComponent(new DamagableComponent(6))
-                   .Build();
-
-    EntityBuilder().AddComponent(new DrawComponent("assets/textures/biegacz.png"))
-                   .AddComponent(new PositionComponent(RandomPositionX(),RandomPositionY(),8,16,16,16))
-                   .AddComponent(new BiegaczComponent())
-                   .AddComponent(new DamagableComponent(1))
-                   .Build();
-        
-    EntityBuilder().AddComponent(new DrawComponent("assets/textures/tank.png"))
-                   .AddComponent(new PositionComponent(RandomPositionX(),RandomPositionY(),16,32,32,32))
-                   .AddComponent(new TankComponent())
-                   .AddComponent(new DamagableComponent(25))
-                   .Build();
+                    .AddComponent(new PositionComponent(s.x,s.y,8,16,16,16))
+                    .AddComponent(new MonsterComponent())
+                    .AddComponent(new DamagableComponent(10))
+                    .Build();
+            }
+            if(spawn == 1){
+                EntityBuilder().AddComponent(new DrawComponent("assets/textures/lucznik.png"))
+                            .AddComponent(new PositionComponent(s.x,s.y,8,16,16,16))
+                            .AddComponent(new LucznikComponent())
+                            .AddComponent(new DamagableComponent(6))
+                            .Build();
+            }
+            if(spawn == 2){
+                EntityBuilder().AddComponent(new DrawComponent("assets/textures/biegacz.png"))
+                            .AddComponent(new PositionComponent(s.x,s.y,8,16,16,16))
+                            .AddComponent(new BiegaczComponent())
+                            .AddComponent(new DamagableComponent(1))
+                            .Build();
+            }
+            if(spawn == 3){
+                EntityBuilder().AddComponent(new DrawComponent("assets/textures/tank.png"))
+                            .AddComponent(new PositionComponent(s.x,s.y,16,32,32,32))
+                            .AddComponent(new TankComponent())
+                            .AddComponent(new DamagableComponent(25))
+                            .Build();
+            }
                 timer = 0;
             }
 }

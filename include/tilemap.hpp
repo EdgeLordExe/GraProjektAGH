@@ -66,6 +66,8 @@ public:
     void Save(std::string path);
     void Load(std::string path);
 
+    Vector2 GetSafeSpawnPosition();
+
 private:
     
     std::vector<TileDefinition> tileDefinitions;

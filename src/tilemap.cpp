@@ -1,8 +1,11 @@
+#include <algorithm>
+#include <optional>
+
 #include "tilemap.hpp"
 #include "entity.hpp"
 #include "serialization.hpp"
 #include "texture_store.hpp"
-#include <algorithm>
+
 
 TileDefinition::TileDefinition(textureId tid, bool col, bool autot){
     collision = col;
@@ -158,6 +161,21 @@ void Tilemap::RemoveEntityFromTile(uint64_t x, uint64_t y, EntityId id){
     }
 }
 
+Vector2 Tilemap::GetSafeSpawnPosition(){
+    std::optional<Vector2> chosen = std::nullopt;
+    while(chosen == std::nullopt){
+        int x = rand() % w;
+        int y = rand() % h;
+        if(GetTileDefinition(GetTile(x,y)).collision){
+            continue;
+        }
+        if(GetEntitiesOnTile(x,y).size() > 0){
+            continue;
+        }
+        chosen = Vector2{(x * 32.0f) + 16.0f, (y * 32.0f) + 16.0f};
+    }
+    return chosen.value();
+}
 
 /*
 std::vector<std::tuple<tileId,double,double>> Tilemap::GetSeenTiles(double x, double y){
