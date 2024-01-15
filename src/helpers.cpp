@@ -2,7 +2,6 @@
 #include <algorithm>
 #include <optional>
 #include <tuple>
-#include <ctime>
 #include <cstdlib>
 
 #include "components.hpp"
@@ -169,13 +168,12 @@ int RandomPositionX () {
     auto playerEntityId = queriedPlayer[0];
     auto playerPosition = static_cast<PositionComponent*>(playerEntityId.GetComponent(COMP_POSITION));
     int xgracz = playerPosition->x;
-    int los = xgracz;
+    int los;
 
-    while (los > xgracz + 200 && los < xgracz - 200){
+    do{
     int xgracz = playerPosition->x;
-    srand(time(NULL));
     los = rand() % 4096;
-    }
+    }while (los > xgracz + 200 && los < xgracz - 200);
     return los;
 }
 
@@ -185,12 +183,11 @@ int RandomPositionY () {
     auto playerEntityId = queriedPlayer[0];
     auto playerPosition = static_cast<PositionComponent*>(playerEntityId.GetComponent(COMP_POSITION));
     int ygracz = playerPosition->y;
-    int los = ygracz;
-
-    while (los > ygracz + 200 && los < ygracz - 200){
+    int los;
+    
+    do{
     int ygracz = playerPosition->y;
-    srand(time(NULL));
     los = rand() % 4096;
-    }
+    }while (los > ygracz + 200 && los < ygracz - 200);
     return los;
 }
