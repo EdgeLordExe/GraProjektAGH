@@ -229,7 +229,7 @@ BulletComponent::BulletComponent(float angle, int damage, float speed, int range
 }
 
 sigreturn BulletComponent::ParseSignal(std::string signal, std::vector<std::any> values){
-    std::cout << "WORKS" << signal << std::endl;
+    //std::cout << "WORKS" << signal << std::endl;
     if(signal.compare(SIGNAL_COLLIDE) != 0){
         return 0;
     }
@@ -237,7 +237,7 @@ sigreturn BulletComponent::ParseSignal(std::string signal, std::vector<std::any>
     if(hit_mobs.contains(id.id)){
         return SIGRETURN_COLLIDE_PENETRATE;
     }
-    std::cout << "sending damage:" << damage << " to " << id.id << std::endl;
+    //std::cout << "sending damage:" << damage << " to " << id.id << std::endl;
     id.SendSignal(SIGNAL_HIT,{damage});
     hit_mobs.insert(id.id);
 
@@ -421,9 +421,8 @@ DamagableComponent::DamagableComponent(int max_health){
 
 sigreturn DamagableComponent::ParseSignal(std::string signal, std::vector<std::any> values){
     if(signal.compare(SIGNAL_HIT) != 0){
-        return 0 ;
+        return 0;
     }
-
     int damage = std::any_cast<int>(values[0]);
     current_health -= damage;
     return 0;
