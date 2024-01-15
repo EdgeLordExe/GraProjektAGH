@@ -155,5 +155,9 @@ void Console::ParseCommand(){
         weaponId wid = stoi(parts[1]);
         pcomp->current_weapon = wid;
     }
+    if(parts[0] == "death"){
+        ECS* ecs = ECS::instance();
+        ecs->SwitchState(State::GAME_OVER);
+    }
 
 }

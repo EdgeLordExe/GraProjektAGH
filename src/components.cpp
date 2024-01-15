@@ -1,8 +1,8 @@
 #include <algorithm>
 #include <cmath>
+#include <sstream>
 
-
-
+#include "serialization.hpp"
 #include "components.hpp"
 #include "helpers.hpp"
 #include "entity_builder.hpp"
@@ -91,12 +91,17 @@ void DrawSystem::Run(){
 
 void DrawSystem::DrawGameOver(){
     TextureStore* txt = TextureStore::instance();
+    ECS* ecs = ECS::instance();
     DrawTexture(txt->GetTexture(txt->LoadTextureWithPath("assets/textures/death_menu.png")),0,0,WHITE);
+    Deserializer d("data/best.txt");
+    uint64_t old_score = d.Deserialize<uint64_t>();
+    DrawText(std::to_string(ecs->points).c_str(),569,200,92,WHITE);
+    DrawText(std::to_string(old_score).c_str(),569,300,92,WHITE);
     if(!IsMouseButtonPressed(MOUSE_BUTTON_LEFT)){
         return;
     }
     Vector2 mpos = GetMousePosition();
-    ECS* ecs = ECS::instance();
+    std::cout << mpos.x << " " << mpos.y << std::endl;
     if(mpos.x >= 462 && mpos.x <= 816 && mpos.y >= 499 && mpos.y <= 576){
         ecs->Reset();
         ecs->SwitchState(State::MAIN_MENU);
@@ -146,6 +151,7 @@ void DrawSystem::DrawMainMenu(){
     }
     Vector2 mpos = GetMousePosition();
     ECS* ecs = ECS::instance();
+    
     if(mpos.x >= 397 && mpos.x <= 882 && mpos.y >= 301 && mpos.y <= 407){
         ecs->SwitchState(State::MAIN_MENU_PLAY);
         return;
@@ -225,6 +231,10 @@ void DrawSystem::DrawGame(){
         Vector2 pos = {i * 68 , 16};
         DrawTextureEx(txt->GetTexture(txt->LoadTextureWithPath("assets/textures/heart.png")),pos,0,2,WHITE);
     }
+    std::stringstream score;
+    score << "SCORE : " << ecs->points;
+    DrawText(score.str().c_str(),16,100,32,WHITE);
+    
 
     //Miejsce na UI
 }
@@ -264,6 +274,17 @@ void PlayerSystem::Run(){
     PositionComponent* position = static_cast<PositionComponent*>( entityId.GetComponent(COMP_POSITION));
     PlayerComponent* player = static_cast<PlayerComponent*>( entityId.GetComponent(COMP_PLAYER));
     if(player->current_health <= 0){
+        uint64_t old_score = 0;
+        {
+            Deserializer d("data/best.txt");
+
+            old_score = d.Deserialize<uint64_t>();
+        }
+        if(old_score < ecs->points){
+            Serializer s("data/best.txt");
+            s.Serialize<uint64_t>(ecs->points);
+        }
+
         ecs->SwitchState(State::GAME_OVER);
     }
     std::unique_ptr<Tilemap>& t = ecs->tilemap;
@@ -508,6 +529,7 @@ void DamageableSystem::Run(){
     for(auto entityId : q){
         DamagableComponent* d = static_cast<DamagableComponent*>( entityId.GetComponent(COMP_DAMAGEABLE));
         if(d->current_health <= 0){
+            ecs->points += 100;
             entityId.Del();
         }
     }
@@ -538,6 +560,7 @@ void EntityGeneratorSystem::Run(){
     auto playerHealth = static_cast<PlayerComponent*>(playerEntityId.GetComponent(COMP_PLAYER));
     int healthgracz = playerHealth->current_health;
     if (timer >= 2.5 * 60 && healthgracz != 0) {
+            ecs->points += 10;
             Vector2 s = ecs->tilemap->GetSafeSpawnPosition();
             int spawn = rand() % 4;
             if(spawn == 0){

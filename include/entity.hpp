@@ -164,7 +164,9 @@ class ECS{
         std::vector<Rectangle> debug_rectangles;
         std::vector<Rectangle> debug_rectangles_persistent;
 
-        bool windowExit = false;
+        bool windowExit = false;   
+
+        uint64_t points = 0;
 
     private: 
 
