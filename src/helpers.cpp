@@ -94,6 +94,7 @@ void MoveAndSlide(EntityId id,Vector2 velocity, bool collide_with_entities,bool 
             bool penetrate = false;
             if(std::get<1>(tuple_r) != std::nullopt){
                 penetrate = id.SendSignal(SIGNAL_COLLIDE,{std::get<1>(tuple_r).value()}) & SIGRETURN_COLLIDE_PENETRATE;
+                penetrate |= std::get<1>(tuple_r).value().SendSignal(SIGNAL_COLLIDE,{id}) & SIGRETURN_COLLIDE_PENETRATE;
             }
 
             if(!penetrate){
@@ -117,6 +118,7 @@ void MoveAndSlide(EntityId id,Vector2 velocity, bool collide_with_entities,bool 
             bool penetrate = false;
             if(std::get<1>(tuple_r) != std::nullopt){
                 penetrate = id.SendSignal(SIGNAL_COLLIDE,{std::get<1>(tuple_r).value()}) & SIGRETURN_COLLIDE_PENETRATE;
+                penetrate |= std::get<1>(tuple_r).value().SendSignal(SIGNAL_COLLIDE,{id}) & SIGRETURN_COLLIDE_PENETRATE;
             }
 
             if(!penetrate){

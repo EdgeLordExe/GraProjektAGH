@@ -18,6 +18,11 @@ sigreturn PlayerComponent::ParseSignal(std::string signal, std::vector<std::any>
         int damage = std::any_cast<int>(values[0]);
         current_health -= damage;
     }
+    if(signal.compare(SIGNAL_COLLIDE) == 0){
+        EntityId id = std::any_cast<EntityId>(values[0]);
+        current_health -= 1;
+        id.Del();
+    }
     return 0;
 }
 
