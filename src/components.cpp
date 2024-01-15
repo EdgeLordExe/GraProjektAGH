@@ -1,12 +1,26 @@
 #include <algorithm>
 #include <cmath>
 
+
+
 #include "components.hpp"
 #include "helpers.hpp"
+#include "entity_builder.hpp"
+
+#define MONSTER_PROCESS_RANGE 1048576
 
 PlayerComponent::PlayerComponent() {
     component_id = COMP_PLAYER;
 }
+
+sigreturn PlayerComponent::ParseSignal(std::string signal, std::vector<std::any> values){
+    if(signal.compare(SIGNAL_HIT) == 0){
+        int damage = std::any_cast<int>(values[0]);
+        current_health -= damage;
+    }
+    return 0;
+}
+
 
 MonsterComponent::MonsterComponent(){
     component_id = COMP_OGR;
@@ -257,8 +271,8 @@ void PlayerSystem::Run(){
 
 }
 
-BulletComponent::BulletComponent(float angle, int damage, float speed, int range, bool penetration, int pen_max_mobs)
- : angle(angle), damage(damage), speed(speed), range(range), penetration(penetration), penetration_max_mobs_hit(pen_max_mobs){
+BulletComponent::BulletComponent(float angle, int damage, float speed, int range, bool penetration, int pen_max_mobs, uint64_t comp_ignore)
+ : angle(angle), damage(damage), speed(speed), range(range), penetration(penetration), penetration_max_mobs_hit(pen_max_mobs), comp_ignore(comp_ignore){
     component_id = COMP_BULLET;
 }
 
@@ -294,7 +308,7 @@ void BulletSystem::Run(){
         PositionComponent* position = static_cast<PositionComponent*>( entityId.GetComponent(COMP_POSITION));
         BulletComponent* bullet = static_cast<BulletComponent*>( entityId.GetComponent(COMP_BULLET));
         Vector2 vel = {bullet->speed * cos(bullet->angle),bullet->speed * sin(bullet->angle)};
-        MoveAndSlide(entityId,vel,true,true,COMP_PLAYER | COMP_BULLET);
+        MoveAndSlide(entityId,vel,true,true,bullet->comp_ignore | COMP_BULLET);
         if(!entityId.IsValid()){
             continue;
         }
@@ -315,22 +329,26 @@ void MonsterSystem::Run(){
     auto playerPosition = static_cast<PositionComponent*>(playerEntityId.GetComponent(COMP_POSITION));
 
     auto queriedMonster = ecs->Query(COMP_OGR | COMP_POSITION);
-    for(EntityId monsterEntityId : queriedMonster){
-    
+     
     if(!queriedPlayer.size() || !queriedMonster.size()){
         return;
     }
   
-    PositionComponent* monsterPosition = static_cast<PositionComponent*>( monsterEntityId.GetComponent(COMP_POSITION));
-    MonsterComponent* monster = static_cast<MonsterComponent*>( monsterEntityId.GetComponent(COMP_OGR));
-    Vector2 direction = { playerPosition->x - monsterPosition->x, playerPosition->y - monsterPosition->y };
-    double kat = atan2(direction.y, direction.x);
+        for(EntityId monsterEntityId : queriedMonster){
+    
+        PositionComponent* monsterPosition = static_cast<PositionComponent*>( monsterEntityId.GetComponent(COMP_POSITION));
+        MonsterComponent* monster = static_cast<MonsterComponent*>( monsterEntityId.GetComponent(COMP_OGR));
+        Vector2 direction = { playerPosition->x - monsterPosition->x, playerPosition->y - monsterPosition->y };
+        if(direction.y*direction.y + direction.x*direction.x > MONSTER_PROCESS_RANGE){
+            continue;
+        }
+        double kat = atan2(direction.y, direction.x);
 
-    double dh = cos(kat);
-    double dv = sin(kat);
-    Vector2 vel = {dh * monster->movement_speed, dv*monster->movement_speed};
-    //std::cout << "vel.x : " << vel.x << " vel.y :" << vel.y << std::endl;
-    MoveAndSlide(monsterEntityId,vel);
+        double dh = cos(kat);
+        double dv = sin(kat);
+        Vector2 vel = {dh * monster->movement_speed, dv*monster->movement_speed};
+        //std::cout << "vel.x : " << vel.x << " vel.y :" << vel.y << std::endl;
+        MoveAndSlide(monsterEntityId,vel);
     }
 }  
 
@@ -344,32 +362,39 @@ void LucznikSystem::Run(){
     auto playerPosition = static_cast<PositionComponent*>(playerEntityId.GetComponent(COMP_POSITION));
 
     auto queriedLucznik = ecs->Query(COMP_LUCZNIK | COMP_POSITION);
-    for(EntityId lucznikEntityId : queriedLucznik){
-    
     if(!queriedPlayer.size() || !queriedLucznik.size()){
         return;
     }
-    
-    PositionComponent* lucznikPosition = static_cast<PositionComponent*>( lucznikEntityId.GetComponent(COMP_POSITION));
-    LucznikComponent* lucznik = static_cast<LucznikComponent*>( lucznikEntityId.GetComponent(COMP_LUCZNIK));
-    Vector2 direction = { playerPosition->x - lucznikPosition->x, playerPosition->y - lucznikPosition->y };
-    double length = sqrt(direction.y*direction.y + direction.x*direction.x);
-    if (length > lucznik->range){
-    double kat = atan2(direction.y, direction.x);
+    for(EntityId lucznikEntityId : queriedLucznik){
+        
+        PositionComponent* lucznikPosition = static_cast<PositionComponent*>( lucznikEntityId.GetComponent(COMP_POSITION));
+        LucznikComponent* lucznik = static_cast<LucznikComponent*>( lucznikEntityId.GetComponent(COMP_LUCZNIK));
 
-    double dh = cos(kat);
-    double dv = sin(kat);
-    Vector2 vel = {dh * lucznik->movement_speed, dv*lucznik->movement_speed};
-    //std::cout << "vel.x : " << vel.x << " vel.y :" << vel.y << std::endl;
-    MoveAndSlide(lucznikEntityId,vel);
-    }
-    else {
-        double dh = 0;
-        double dv = 0;
-        Vector2 vel = {dh * lucznik->movement_speed, dv*lucznik->movement_speed};
-        MoveAndSlide(lucznikEntityId,vel);
-    }
-    }
+        lucznik->arrow_timer++;
+        Vector2 direction = { playerPosition->x - lucznikPosition->x, playerPosition->y - lucznikPosition->y };
+        if(direction.y*direction.y + direction.x*direction.x > MONSTER_PROCESS_RANGE){
+            continue;
+        }
+        double kat = atan2(direction.y, direction.x);
+        double dh = cos(kat);
+        double dv = sin(kat);
+        if (direction.y*direction.y + direction.x*direction.x > lucznik->range*lucznik->range){
+            Vector2 vel = {dh * lucznik->movement_speed, dv*lucznik->movement_speed};
+            //std::cout << "vel.x : " << vel.x << " vel.y :" << vel.y << std::endl;
+            MoveAndSlide(lucznikEntityId,vel);
+        }
+        else {
+            Vector2 vel = {-dh * lucznik->movement_speed, -dv*lucznik->movement_speed};
+            MoveAndSlide(lucznikEntityId,vel);
+                if(lucznik->arrow_timer >= 120){
+                    lucznik->arrow_timer = 0;
+                    EntityBuilder().AddComponent(new DrawComponent("assets/textures/arrow.png",(kat * 360 )/ (2 * PI)))
+                            .AddComponent(new PositionComponent(lucznikPosition->x,lucznikPosition->y,4,4,2,2))
+                            .AddComponent(new BulletComponent(kat,1,2 ,4,false,0,COMP_LUCZNIK | COMP_BIEGACZ | COMP_OGR | COMP_TANK))
+                            .Build();
+                }
+            }
+        }
 }  
 
 void BiegaczSystem::Run(){
@@ -382,22 +407,26 @@ void BiegaczSystem::Run(){
     auto playerPosition = static_cast<PositionComponent*>(playerEntityId.GetComponent(COMP_POSITION));
 
     auto queriedBiegacz = ecs->Query(COMP_BIEGACZ | COMP_POSITION);
-    for(EntityId biegaczEntityId : queriedBiegacz){
-    
     if(!queriedPlayer.size() || !queriedBiegacz.size()){
         return;
     }
-  
-    PositionComponent* biegaczPosition = static_cast<PositionComponent*>( biegaczEntityId.GetComponent(COMP_POSITION));
-    BiegaczComponent* biegacz = static_cast<BiegaczComponent*>( biegaczEntityId.GetComponent(COMP_BIEGACZ));
-    Vector2 direction = { playerPosition->x - biegaczPosition->x, playerPosition->y - biegaczPosition->y };
-    double kat = atan2(direction.y, direction.x);
+    for(EntityId biegaczEntityId : queriedBiegacz){
+        
+        PositionComponent* biegaczPosition = static_cast<PositionComponent*>( biegaczEntityId.GetComponent(COMP_POSITION));
+        BiegaczComponent* biegacz = static_cast<BiegaczComponent*>( biegaczEntityId.GetComponent(COMP_BIEGACZ));
+        Vector2 direction = { playerPosition->x - biegaczPosition->x, playerPosition->y - biegaczPosition->y };
 
-    double dh = cos(kat);
-    double dv = sin(kat);
-    Vector2 vel = {dh * biegacz->movement_speed, dv*biegacz->movement_speed};
-    //std::cout << "vel.x : " << vel.x << " vel.y :" << vel.y << std::endl;
-    MoveAndSlide(biegaczEntityId,vel);
+        if(direction.y*direction.y + direction.x*direction.x > MONSTER_PROCESS_RANGE){
+            continue;
+        }
+
+        double kat = atan2(direction.y, direction.x);
+
+        double dh = cos(kat);
+        double dv = sin(kat);
+        Vector2 vel = {dh * biegacz->movement_speed, dv*biegacz->movement_speed};
+        //std::cout << "vel.x : " << vel.x << " vel.y :" << vel.y << std::endl;
+        MoveAndSlide(biegaczEntityId,vel);
     }
 }  
 
@@ -412,22 +441,25 @@ void TankSystem::Run(){
     auto playerPosition = static_cast<PositionComponent*>(playerEntityId.GetComponent(COMP_POSITION));
 
     auto queriedTank = ecs->Query(COMP_TANK | COMP_POSITION);
-    for(EntityId tankEntityId : queriedTank){
-    
     if(!queriedPlayer.size() || !queriedTank.size()){
         return;
     }
  
-    PositionComponent* tankPosition = static_cast<PositionComponent*>( tankEntityId.GetComponent(COMP_POSITION));
-    TankComponent* tank = static_cast<TankComponent*>( tankEntityId.GetComponent(COMP_TANK));
-    Vector2 direction = { playerPosition->x - tankPosition->x, playerPosition->y - tankPosition->y };
-    double kat = atan2(direction.y, direction.x);
+    for(EntityId tankEntityId : queriedTank){
+    
+        PositionComponent* tankPosition = static_cast<PositionComponent*>( tankEntityId.GetComponent(COMP_POSITION));
+        TankComponent* tank = static_cast<TankComponent*>( tankEntityId.GetComponent(COMP_TANK));
+        Vector2 direction = { playerPosition->x - tankPosition->x, playerPosition->y - tankPosition->y };
+        if(direction.y*direction.y + direction.x*direction.x > MONSTER_PROCESS_RANGE){
+            continue;
+        }
+        double kat = atan2(direction.y, direction.x);
 
-    double dh = cos(kat);
-    double dv = sin(kat);
-    Vector2 vel = {dh * tank->movement_speed, dv*tank->movement_speed};
-    //std::cout << "vel.x : " << vel.x << " vel.y :" << vel.y << std::endl;
-    MoveAndSlide(tankEntityId,vel);
+        double dh = cos(kat);
+        double dv = sin(kat);
+        Vector2 vel = {dh * tank->movement_speed, dv*tank->movement_speed};
+        //std::cout << "vel.x : " << vel.x << " vel.y :" << vel.y << std::endl;
+        MoveAndSlide(tankEntityId,vel);
     }
 }  
 

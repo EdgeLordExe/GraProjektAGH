@@ -15,6 +15,8 @@
 class PlayerComponent : public Component{
 public:
     PlayerComponent();
+    virtual sigreturn ParseSignal(std::string signal, std::vector<std::any> values) override;
+    
     double movement_speed = 3.0;
     double sprint_speed = 6.0;
 
@@ -27,6 +29,7 @@ public:
     float stamina_regeneration = 0.1;
 
     std::optional<weaponId> current_weapon = 0;
+
 };
 
 class DamagableComponent: public Component{
@@ -49,6 +52,7 @@ class LucznikComponent : public Component{
     LucznikComponent();
     double movement_speed = 1.8;
 
+    int arrow_timer = 0;
     int range = 100;
 };
 
@@ -131,7 +135,7 @@ class InspectComponent : public Component{
 
 class BulletComponent : public Component{
     public:
-    BulletComponent(float angle, int damage, float speed, int range, bool penetration, int pen_max_mobs);
+    BulletComponent(float angle, int damage, float speed, int range, bool penetration, int pen_max_mobs, uint64_t comp_ignore);
     virtual sigreturn ParseSignal(std::string signal, std::vector<std::any> values) override;
 
     float angle;
@@ -142,6 +146,7 @@ class BulletComponent : public Component{
     bool penetration = false;
     int penetration_mobs_hit = 0;
     int penetration_max_mobs_hit = 0;
+    uint64_t comp_ignore;
     std::set<entityId> hit_mobs;
 };
 
