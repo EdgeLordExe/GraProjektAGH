@@ -122,6 +122,7 @@ void ECS::Init(){
     InsertSystem(new BiegaczSystem());
     InsertSystem(new TankSystem());
     InsertSystem(new DamageableSystem());
+    InsertSystem(new EntityGeneratorSystem());
 
     InsertSystem(new DrawSystem());
  

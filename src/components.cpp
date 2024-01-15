@@ -499,3 +499,40 @@ sigreturn DamagableComponent::ParseSignal(std::string signal, std::vector<std::a
     current_health -= damage;
     return 0;
 }
+
+void EntityGeneratorSystem::Run(){
+    ECS* ecs = ECS::instance();
+    timer++;
+    auto queriedPlayer = ecs->Query(COMP_PLAYER);
+    auto playerEntityId = queriedPlayer[0];
+    auto playerHealth = static_cast<PlayerComponent*>(playerEntityId.GetComponent(COMP_PLAYER));
+    int healthgracz = playerHealth->current_health;
+    if (timer >= 10 * 60 && healthgracz != 0) {
+                EntityBuilder().AddComponent(new DrawComponent("assets/textures/ogr.png"))
+                   .AddComponent(new PositionComponent(RandomPositionX(),RandomPositionY(),8,16,16,16))
+                   .AddComponent(new MonsterComponent())
+                   .AddComponent(new DamagableComponent(10))
+                   .Build();
+
+    EntityBuilder().AddComponent(new DrawComponent("assets/textures/lucznik.png"))
+                   .AddComponent(new PositionComponent(RandomPositionX(),RandomPositionY(),8,16,16,16))
+                   .AddComponent(new LucznikComponent())
+                   .AddComponent(new DamagableComponent(6))
+                   .Build();
+
+    EntityBuilder().AddComponent(new DrawComponent("assets/textures/biegacz.png"))
+                   .AddComponent(new PositionComponent(RandomPositionX(),RandomPositionY(),8,16,16,16))
+                   .AddComponent(new BiegaczComponent())
+                   .AddComponent(new DamagableComponent(1))
+                   .Build();
+        
+    EntityBuilder().AddComponent(new DrawComponent("assets/textures/tank.png"))
+                   .AddComponent(new PositionComponent(RandomPositionX(),RandomPositionY(),16,32,32,32))
+                   .AddComponent(new TankComponent())
+                   .AddComponent(new DamagableComponent(25))
+                   .Build();
+                timer = 0;
+            }
+}
+
+
