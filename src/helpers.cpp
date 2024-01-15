@@ -2,9 +2,11 @@
 #include <algorithm>
 #include <optional>
 #include <tuple>
-#include "helpers.hpp"
-#include "components.hpp"
+#include <ctime>
+#include <cstdlib>
 
+#include "components.hpp"
+#include "helpers.hpp"
 
 
 Vector2 GetMousePositionInWorld(){
@@ -159,4 +161,36 @@ void MoveAndSlide(EntityId id,Vector2 velocity, bool collide_with_entities,bool 
         t->InsertEntityOnTile((int)(position->x/32),(int)(position->y/32),id);
     }
 
+}
+//mapa 4096x4096
+int RandomPositionX () {
+    ECS* ecs = ECS::instance();
+    auto queriedPlayer = ecs->Query(COMP_PLAYER | COMP_POSITION);
+    auto playerEntityId = queriedPlayer[0];
+    auto playerPosition = static_cast<PositionComponent*>(playerEntityId.GetComponent(COMP_POSITION));
+    int xgracz = playerPosition->x;
+    int los = xgracz;
+
+    while (los > xgracz + 200 && los < xgracz - 200){
+    int xgracz = playerPosition->x;
+    srand(time(NULL));
+    los = rand() % 4096;
+    }
+    return los;
+}
+
+int RandomPositionY () {
+    ECS* ecs = ECS::instance();
+    auto queriedPlayer = ecs->Query(COMP_PLAYER | COMP_POSITION);
+    auto playerEntityId = queriedPlayer[0];
+    auto playerPosition = static_cast<PositionComponent*>(playerEntityId.GetComponent(COMP_POSITION));
+    int ygracz = playerPosition->y;
+    int los = ygracz;
+
+    while (los > ygracz + 200 && los < ygracz - 200){
+    int ygracz = playerPosition->y;
+    srand(time(NULL));
+    los = rand() % 4096;
+    }
+    return los;
 }

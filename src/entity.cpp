@@ -5,6 +5,7 @@
 #include "entity.hpp"
 #include "components.hpp"
 #include "entity_builder.hpp"
+#include "helpers.hpp"
 
 #define FLAG2NUM(x)((uint64_t)floor(log2((double) x )))
 
@@ -147,7 +148,7 @@ void ECS::Init(){
                    .Build();
         
     EntityBuilder().AddComponent(new DrawComponent("assets/textures/tank.png"))
-                   .AddComponent(new PositionComponent(200,120,16,32,32,32))
+                   .AddComponent(new PositionComponent(160,160,16,32,32,32))
                    .AddComponent(new TankComponent())
                    .AddComponent(new DamagableComponent(25))
                    .Build();

@@ -62,7 +62,7 @@ class BiegaczComponent : public Component{
 class TankComponent : public Component{
     public:
     TankComponent();
-    double movement_speed = 0.2;
+    double movement_speed = 0.6;
 
 };
 

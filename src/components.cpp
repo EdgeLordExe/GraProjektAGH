@@ -277,15 +277,16 @@ void MonsterSystem::Run(){
         return;
     }
     auto queriedPlayer = ecs->Query(COMP_PLAYER | COMP_POSITION);
+    auto playerEntityId = queriedPlayer[0];
+    auto playerPosition = static_cast<PositionComponent*>(playerEntityId.GetComponent(COMP_POSITION));
+
     auto queriedMonster = ecs->Query(COMP_OGR | COMP_POSITION);
+    for(EntityId monsterEntityId : queriedMonster){
     
     if(!queriedPlayer.size() || !queriedMonster.size()){
         return;
     }
-    auto playerEntityId = queriedPlayer[0];
-    auto playerPosition = static_cast<PositionComponent*>(playerEntityId.GetComponent(COMP_POSITION));
-
-    auto monsterEntityId = queriedMonster[0];    
+  
     PositionComponent* monsterPosition = static_cast<PositionComponent*>( monsterEntityId.GetComponent(COMP_POSITION));
     MonsterComponent* monster = static_cast<MonsterComponent*>( monsterEntityId.GetComponent(COMP_OGR));
     Vector2 direction = { playerPosition->x - monsterPosition->x, playerPosition->y - monsterPosition->y };
@@ -296,6 +297,7 @@ void MonsterSystem::Run(){
     Vector2 vel = {dh * monster->movement_speed, dv*monster->movement_speed};
     //std::cout << "vel.x : " << vel.x << " vel.y :" << vel.y << std::endl;
     MoveAndSlide(monsterEntityId,vel);
+    }
 }  
 
 void LucznikSystem::Run(){
@@ -304,15 +306,16 @@ void LucznikSystem::Run(){
         return;
     }
     auto queriedPlayer = ecs->Query(COMP_PLAYER | COMP_POSITION);
+    auto playerEntityId = queriedPlayer[0];
+    auto playerPosition = static_cast<PositionComponent*>(playerEntityId.GetComponent(COMP_POSITION));
+
     auto queriedLucznik = ecs->Query(COMP_LUCZNIK | COMP_POSITION);
+    for(EntityId lucznikEntityId : queriedLucznik){
     
     if(!queriedPlayer.size() || !queriedLucznik.size()){
         return;
     }
-    auto playerEntityId = queriedPlayer[0];
-    auto playerPosition = static_cast<PositionComponent*>(playerEntityId.GetComponent(COMP_POSITION));
-
-    auto lucznikEntityId = queriedLucznik[0];    
+    
     PositionComponent* lucznikPosition = static_cast<PositionComponent*>( lucznikEntityId.GetComponent(COMP_POSITION));
     LucznikComponent* lucznik = static_cast<LucznikComponent*>( lucznikEntityId.GetComponent(COMP_LUCZNIK));
     Vector2 direction = { playerPosition->x - lucznikPosition->x, playerPosition->y - lucznikPosition->y };
@@ -332,6 +335,7 @@ void LucznikSystem::Run(){
         Vector2 vel = {dh * lucznik->movement_speed, dv*lucznik->movement_speed};
         MoveAndSlide(lucznikEntityId,vel);
     }
+    }
 }  
 
 void BiegaczSystem::Run(){
@@ -340,15 +344,16 @@ void BiegaczSystem::Run(){
         return;
     }
     auto queriedPlayer = ecs->Query(COMP_PLAYER | COMP_POSITION);
+    auto playerEntityId = queriedPlayer[0];
+    auto playerPosition = static_cast<PositionComponent*>(playerEntityId.GetComponent(COMP_POSITION));
+
     auto queriedBiegacz = ecs->Query(COMP_BIEGACZ | COMP_POSITION);
+    for(EntityId biegaczEntityId : queriedBiegacz){
     
     if(!queriedPlayer.size() || !queriedBiegacz.size()){
         return;
     }
-    auto playerEntityId = queriedPlayer[0];
-    auto playerPosition = static_cast<PositionComponent*>(playerEntityId.GetComponent(COMP_POSITION));
-
-    auto biegaczEntityId = queriedBiegacz[0];    
+  
     PositionComponent* biegaczPosition = static_cast<PositionComponent*>( biegaczEntityId.GetComponent(COMP_POSITION));
     BiegaczComponent* biegacz = static_cast<BiegaczComponent*>( biegaczEntityId.GetComponent(COMP_BIEGACZ));
     Vector2 direction = { playerPosition->x - biegaczPosition->x, playerPosition->y - biegaczPosition->y };
@@ -359,6 +364,7 @@ void BiegaczSystem::Run(){
     Vector2 vel = {dh * biegacz->movement_speed, dv*biegacz->movement_speed};
     //std::cout << "vel.x : " << vel.x << " vel.y :" << vel.y << std::endl;
     MoveAndSlide(biegaczEntityId,vel);
+    }
 }  
 
 void TankSystem::Run(){
@@ -366,16 +372,18 @@ void TankSystem::Run(){
     if(ecs->GetState() != State::PLAY){
         return;
     }
+    
     auto queriedPlayer = ecs->Query(COMP_PLAYER | COMP_POSITION);
+    auto playerEntityId = queriedPlayer[0];
+    auto playerPosition = static_cast<PositionComponent*>(playerEntityId.GetComponent(COMP_POSITION));
+
     auto queriedTank = ecs->Query(COMP_TANK | COMP_POSITION);
+    for(EntityId tankEntityId : queriedTank){
     
     if(!queriedPlayer.size() || !queriedTank.size()){
         return;
     }
-    auto playerEntityId = queriedPlayer[0];
-    auto playerPosition = static_cast<PositionComponent*>(playerEntityId.GetComponent(COMP_POSITION));
-
-    auto tankEntityId = queriedTank[0];    
+ 
     PositionComponent* tankPosition = static_cast<PositionComponent*>( tankEntityId.GetComponent(COMP_POSITION));
     TankComponent* tank = static_cast<TankComponent*>( tankEntityId.GetComponent(COMP_TANK));
     Vector2 direction = { playerPosition->x - tankPosition->x, playerPosition->y - tankPosition->y };
@@ -386,6 +394,7 @@ void TankSystem::Run(){
     Vector2 vel = {dh * tank->movement_speed, dv*tank->movement_speed};
     //std::cout << "vel.x : " << vel.x << " vel.y :" << vel.y << std::endl;
     MoveAndSlide(tankEntityId,vel);
+    }
 }  
 
 void DamageableSystem::Run(){
@@ -419,4 +428,3 @@ sigreturn DamagableComponent::ParseSignal(std::string signal, std::vector<std::a
     current_health -= damage;
     return 0;
 }
-

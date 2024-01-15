@@ -15,5 +15,8 @@ void MoveAndSlide(EntityId id,Vector2 velocity, bool collide_with_entities, bool
 
 void MoveAndSlide(EntityId id,Vector2 velocity, bool collide_with_entities, bool del_on_hit, uint64_t ignore_entities_with_components);
 
+int RandomPositionX();
+
+int RandomPositionY();
 
 #endif
