@@ -1,6 +1,8 @@
 #include <math.h>
 //#include <memory>
 #include <iostream>
+#include <ctime>
+#include <windows.h>
 
 #include "entity.hpp"
 #include "components.hpp"
@@ -157,6 +159,70 @@ void ECS::Init(){
                    .AddComponent(new DamagableComponent(25))
                    .Build();
 
+}
+
+void EntityGeneratorSystem:: Run(){
+    double level = 1;
+    time_t start = time(0);
+    time_t test = time(0);
+
+    while(level != 0.1){
+        while(test - start < 60){
+                EntityBuilder().AddComponent(new DrawComponent("assets/textures/ogr.png"))
+                   .AddComponent(new PositionComponent(RandomPositionX(),RandomPositionY(),8,16,16,16))
+                   .AddComponent(new MonsterComponent())
+                   .AddComponent(new DamagableComponent(10))
+                   .Build();
+
+    EntityBuilder().AddComponent(new DrawComponent("assets/textures/lucznik.png"))
+                   .AddComponent(new PositionComponent(RandomPositionX(),RandomPositionY(),8,16,16,16))
+                   .AddComponent(new LucznikComponent())
+                   .AddComponent(new DamagableComponent(6))
+                   .Build();
+
+    EntityBuilder().AddComponent(new DrawComponent("assets/textures/biegacz.png"))
+                   .AddComponent(new PositionComponent(RandomPositionX(),RandomPositionY(),8,16,16,16))
+                   .AddComponent(new BiegaczComponent())
+                   .AddComponent(new DamagableComponent(1))
+                   .Build();
+        
+    EntityBuilder().AddComponent(new DrawComponent("assets/textures/tank.png"))
+                   .AddComponent(new PositionComponent(RandomPositionX(),RandomPositionY(),16,32,32,32))
+                   .AddComponent(new TankComponent())
+                   .AddComponent(new DamagableComponent(25))
+                   .Build();
+                   Sleep(15000*level);
+        }
+        level -= 0.1;
+        start = time(0);
+        test = time(0);
+    }
+    while (level == 0.1){
+            EntityBuilder().AddComponent(new DrawComponent("assets/textures/ogr.png"))
+                   .AddComponent(new PositionComponent(RandomPositionX(),RandomPositionY(),8,16,16,16))
+                   .AddComponent(new MonsterComponent())
+                   .AddComponent(new DamagableComponent(10))
+                   .Build();
+
+    EntityBuilder().AddComponent(new DrawComponent("assets/textures/lucznik.png"))
+                   .AddComponent(new PositionComponent(RandomPositionX(),RandomPositionY(),8,16,16,16))
+                   .AddComponent(new LucznikComponent())
+                   .AddComponent(new DamagableComponent(6))
+                   .Build();
+
+    EntityBuilder().AddComponent(new DrawComponent("assets/textures/biegacz.png"))
+                   .AddComponent(new PositionComponent(RandomPositionX(),RandomPositionY(),8,16,16,16))
+                   .AddComponent(new BiegaczComponent())
+                   .AddComponent(new DamagableComponent(1))
+                   .Build();
+        
+    EntityBuilder().AddComponent(new DrawComponent("assets/textures/tank.png"))
+                   .AddComponent(new PositionComponent(RandomPositionX(),RandomPositionY(),16,32,32,32))
+                   .AddComponent(new TankComponent())
+                   .AddComponent(new DamagableComponent(25))
+                   .Build();
+                   Sleep(15000*level);
+    }
 }
 
 /*

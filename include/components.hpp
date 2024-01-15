@@ -156,4 +156,8 @@ class DamageableSystem: public System{
     virtual void Run() override;
 };
 
+class EntityGeneratorSystem: public System{
+    virtual void Run() override;
+};
+
 #endif
