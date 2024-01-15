@@ -89,11 +89,11 @@ class WeaponMinigun : public WeaponSimpleGun{
         automatic = true;
         bullet_amt = 1;
         bullet_spread_arc = 10;
-        bullet_delay = 3;
+        bullet_delay = 12;
         bullet_range = 256;
         bullet_range_variation = 32;
         bullet_speed = 12;
-        bullet_speed_variation = 1;
+        bullet_speed_variation = 6;
         bullet_penetration = false;
         bullet_max_mobs_penetrated = 0;
     }
@@ -105,6 +105,7 @@ class WeaponCrossbow : public WeaponSimpleGun{
         automatic = false;
         bullet_amt = 1;
         bullet_spread_arc = 1;
+        bullet_damage = 10;
         bullet_delay = 100;
         bullet_range = 512;
         bullet_range_variation = 1;
