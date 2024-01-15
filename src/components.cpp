@@ -431,13 +431,12 @@ sigreturn DamagableComponent::ParseSignal(std::string signal, std::vector<std::a
 
 void EntityGeneratorSystem::Run(){
     ECS* ecs = ECS::instance();
-    double lvl = 1;
-    int bonus_timer = 0;
-
-    while(lvl != 0.1){
-        for (timer = 0; timer <= 3600; timer++) {
-            bonus_timer++;
-            if (bonus_timer >= 15*lvl*60){
+    timer++;
+    auto queriedPlayer = ecs->Query(COMP_PLAYER);
+    auto playerEntityId = queriedPlayer[0];
+    auto playerHealth = static_cast<PlayerComponent*>(playerEntityId.GetComponent(COMP_PLAYER));
+    int healthgracz = playerHealth->current_health;
+    if (timer >= 10 * 60 && healthgracz != 0) {
                 EntityBuilder().AddComponent(new DrawComponent("assets/textures/ogr.png"))
                    .AddComponent(new PositionComponent(RandomPositionX(),RandomPositionY(),8,16,16,16))
                    .AddComponent(new MonsterComponent())
@@ -461,40 +460,8 @@ void EntityGeneratorSystem::Run(){
                    .AddComponent(new TankComponent())
                    .AddComponent(new DamagableComponent(25))
                    .Build();
-                   bonus_timer = 0;
+                timer = 0;
             }
-        }
-        lvl -= 0.1;
-    }
-    while (lvl == 0.1){
-        bonus_timer++;
-        if (bonus_timer >= 15*lvl*60){
-            EntityBuilder().AddComponent(new DrawComponent("assets/textures/ogr.png"))
-                   .AddComponent(new PositionComponent(RandomPositionX(),RandomPositionY(),8,16,16,16))
-                   .AddComponent(new MonsterComponent())
-                   .AddComponent(new DamagableComponent(10))
-                   .Build();
-
-    EntityBuilder().AddComponent(new DrawComponent("assets/textures/lucznik.png"))
-                   .AddComponent(new PositionComponent(RandomPositionX(),RandomPositionY(),8,16,16,16))
-                   .AddComponent(new LucznikComponent())
-                   .AddComponent(new DamagableComponent(6))
-                   .Build();
-
-    EntityBuilder().AddComponent(new DrawComponent("assets/textures/biegacz.png"))
-                   .AddComponent(new PositionComponent(RandomPositionX(),RandomPositionY(),8,16,16,16))
-                   .AddComponent(new BiegaczComponent())
-                   .AddComponent(new DamagableComponent(1))
-                   .Build();
-        
-    EntityBuilder().AddComponent(new DrawComponent("assets/textures/tank.png"))
-                   .AddComponent(new PositionComponent(RandomPositionX(),RandomPositionY(),16,32,32,32))
-                   .AddComponent(new TankComponent())
-                   .AddComponent(new DamagableComponent(25))
-                   .Build();
-                   bonus_timer = 0;
-    }
-}
 }
 
 
