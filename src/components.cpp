@@ -45,6 +45,50 @@ PositionComponent::PositionComponent(uint64_t xpos, uint64_t ypos, int collider_
 }
 
 
+BulletComponent::BulletComponent(float angle, int damage, float speed, int range, bool penetration, int pen_max_mobs)
+ : angle(angle), damage(damage), speed(speed), range(range), penetration(penetration), penetration_max_mobs_hit(pen_max_mobs){
+    component_id = COMP_BULLET;
+}
+
+sigreturn BulletComponent::ParseSignal(std::string signal, std::vector<std::any> values){
+    if(signal.compare(SIGNAL_COLLIDE) != 0){
+        return 0;
+    }
+    EntityId id = std::any_cast<EntityId>(values[0]);
+    if(hit_mobs.contains(id.id)){
+        return SIGRETURN_COLLIDE_PENETRATE;
+    }
+    id.SendSignal(SIGNAL_HIT,{damage});
+    hit_mobs.insert(id.id);
+
+    if(!penetration){
+        return 0;
+    }
+
+    if(penetration_mobs_hit >= penetration_mobs_hit){
+        return 0;
+    }
+
+    penetration_mobs_hit++;
+    return SIGRETURN_COLLIDE_PENETRATE;
+}
+
+
+DamagableComponent::DamagableComponent(int max_health){
+    component_id = COMP_DAMAGEABLE;
+    current_health = max_health;
+}
+
+sigreturn DamagableComponent::ParseSignal(std::string signal, std::vector<std::any> values){
+    if(signal.compare(SIGNAL_HIT) != 0){
+        return 0 ;
+    }
+
+    int damage = std::any_cast<int>(values[0]);
+    current_health -= damage;
+    return 0;
+}
+
 void DrawSystem::Run(){
     ECS* ecs = ECS::instance();
     BeginDrawing();
@@ -223,34 +267,6 @@ void PlayerSystem::Run(){
 
 }
 
-BulletComponent::BulletComponent(float angle, int damage, float speed, int range, bool penetration, int pen_max_mobs)
- : angle(angle), damage(damage), speed(speed), range(range), penetration(penetration), penetration_max_mobs_hit(pen_max_mobs){
-    component_id = COMP_BULLET;
-}
-
-sigreturn BulletComponent::ParseSignal(std::string signal, std::vector<std::any> values){
-    if(signal.compare(SIGNAL_COLLIDE) != 0){
-        return 0;
-    }
-    EntityId id = std::any_cast<EntityId>(values[0]);
-    if(hit_mobs.contains(id.id)){
-        return SIGRETURN_COLLIDE_PENETRATE;
-    }
-    id.SendSignal(SIGNAL_HIT,{damage});
-    hit_mobs.insert(id.id);
-
-    if(!penetration){
-        return 0;
-    }
-
-    if(penetration_mobs_hit >= penetration_mobs_hit){
-        return 0;
-    }
-
-    penetration_mobs_hit++;
-    return SIGRETURN_COLLIDE_PENETRATE;
-}
-
 void BulletSystem::Run(){
     ECS* ecs = ECS::instance();
     auto query = ecs->Query(COMP_BULLET | COMP_POSITION);
@@ -402,19 +418,3 @@ void DamageableSystem::Run(){
         }
     }
 }
-
-DamagableComponent::DamagableComponent(int max_health){
-    component_id = COMP_DAMAGEABLE;
-    current_health = max_health;
-}
-
-sigreturn DamagableComponent::ParseSignal(std::string signal, std::vector<std::any> values){
-    if(signal.compare(SIGNAL_HIT) != 0){
-        return 0 ;
-    }
-
-    int damage = std::any_cast<int>(values[0]);
-    current_health -= damage;
-    return 0;
-}
-
