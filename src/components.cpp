@@ -382,16 +382,17 @@ void LucznikSystem::Run(){
             Vector2 vel = {dh * lucznik->movement_speed, dv*lucznik->movement_speed};
             //std::cout << "vel.x : " << vel.x << " vel.y :" << vel.y << std::endl;
             MoveAndSlide(lucznikEntityId,vel);
-        }
-        else {
-            Vector2 vel = {-dh * lucznik->movement_speed, -dv*lucznik->movement_speed};
-            MoveAndSlide(lucznikEntityId,vel);
-                if(lucznik->arrow_timer >= 120){
-                    lucznik->arrow_timer = 0;
-                    EntityBuilder().AddComponent(new DrawComponent("assets/textures/arrow.png",(kat * 360 )/ (2 * PI)))
-                            .AddComponent(new PositionComponent(lucznikPosition->x,lucznikPosition->y,4,4,2,2))
-                            .AddComponent(new BulletComponent(kat,1,2 ,4,false,0,COMP_LUCZNIK | COMP_BIEGACZ | COMP_OGR | COMP_TANK))
-                            .Build();
+        }else {
+            if(direction.y*direction.y + direction.x*direction.x <= (lucznik->range*lucznik->range)/4){
+                Vector2 vel = {-dh * lucznik->movement_speed, -dv*lucznik->movement_speed};
+                MoveAndSlide(lucznikEntityId,vel);
+            }
+            if(lucznik->arrow_timer >= 120){
+                lucznik->arrow_timer = 0;
+                EntityBuilder().AddComponent(new DrawComponent("assets/textures/arrow.png",(kat * 360 )/ (2 * PI)))
+                        .AddComponent(new PositionComponent(lucznikPosition->x,lucznikPosition->y,4,4,2,2))
+                        .AddComponent(new BulletComponent(kat,1,2 ,512,false,0,COMP_LUCZNIK | COMP_BIEGACZ | COMP_OGR | COMP_TANK))
+                        .Build();
                 }
             }
         }
