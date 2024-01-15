@@ -226,7 +226,7 @@ void PlayerSystem::Run(){
 
     // DEBUG
     if(ecs->tilemap->editing){
-        if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT)){
+        if(IsMouseButtonDown(MOUSE_BUTTON_LEFT)){
             Vector2 coords = GetMousePosition();
             std::cout << "x :" << coords.x << "y :" << coords.y << std::endl;
             uint64_t worldx = coords.x/2 + ecs->cam.target.x - SCREEN_WIDTH/4;
