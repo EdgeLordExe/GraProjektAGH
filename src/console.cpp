@@ -145,7 +145,7 @@ void Console::ParseCommand(){
         ecs->show_hitbox = !ecs->show_hitbox;
     }
 
-     if(parts[0] == "gvweapon"){
+    if(parts[0] == "gvweapon"){
         if(parts.size() != 2){
             history.push_back("ERROR: Wrong amount of commands passed into the console, use tdadd like: tgvishbox <weapon_id>");
             return;
@@ -155,7 +155,5 @@ void Console::ParseCommand(){
         weaponId wid = stoi(parts[1]);
         pcomp->current_weapon = wid;
     }
-
-
 
 }

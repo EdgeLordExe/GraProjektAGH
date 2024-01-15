@@ -59,8 +59,41 @@ void DrawSystem::Run(){
         case State::MAIN_MENU:
             DrawMainMenu();
         break;
+        case State::MAIN_MENU_PLAY:
+            DrawMainMenuPlay();
+        break;
     }
     EndDrawing();
+}
+
+void DrawSystem::DrawMainMenuPlay(){
+    TextureStore* txt = TextureStore::instance();
+    DrawTexture(txt->GetTexture(txt->LoadTextureWithPath("assets/textures/bg_menu.png")),0,0,WHITE);
+    DrawTexture(txt->GetTexture(txt->LoadTextureWithPath("assets/textures/crossbow_menu.png")),0,0,WHITE);
+    DrawTexture(txt->GetTexture(txt->LoadTextureWithPath("assets/textures/minigun_menu.png")),0,0,WHITE);
+    DrawTexture(txt->GetTexture(txt->LoadTextureWithPath("assets/textures/shotgun_menu.png")),0,0,WHITE);
+    if(!IsMouseButtonPressed(MOUSE_BUTTON_LEFT)){
+        return;
+    }
+    Vector2 mpos = GetMousePosition();
+    std::cout << "X : " << mpos.x << "Y :" << mpos.y << std::endl;
+    ECS* ecs = ECS::instance();
+    auto* pcomp = static_cast<PlayerComponent*>(ecs->Query(COMP_PLAYER)[0].GetComponent(COMP_PLAYER));
+    if(mpos.x >= 867 && mpos.x <= 1153 && mpos.y >= 217 && mpos.y <= 502){
+        pcomp->current_weapon = 1;
+        ecs->SwitchState(State::PLAY);
+        return;
+    }
+    if(mpos.x >= 496 && mpos.x <= 783 && mpos.y >= 217 && mpos.y <= 502){
+        pcomp->current_weapon = 2;
+        ecs->SwitchState(State::PLAY);
+        return;
+    }
+    if(mpos.x >= 126 && mpos.x <= 412 && mpos.y >= 217 && mpos.y <= 502){
+        pcomp->current_weapon = 0;
+        ecs->SwitchState(State::PLAY);
+        return;
+    }
 }
 
 void DrawSystem::DrawMainMenu(){
@@ -76,7 +109,7 @@ void DrawSystem::DrawMainMenu(){
     Vector2 mpos = GetMousePosition();
     ECS* ecs = ECS::instance();
     if(mpos.x >= 397 && mpos.x <= 882 && mpos.y >= 301 && mpos.y <= 407){
-        ecs->SwitchState(State::PLAY);
+        ecs->SwitchState(State::MAIN_MENU_PLAY);
         return;
     }
     if(mpos.x >= 397 && mpos.x <= 882 && mpos.y >= 552 && mpos.y <= 659){
@@ -155,10 +188,11 @@ void DrawSystem::DrawGame(){
 
 void DebugSystem::Run(){
     ECS* ecs = ECS::instance();
+    
      if(IsKeyPressed(KEY_GRAVE)){
         if(ecs->GetState() == State::PLAY){
             ecs->SwitchState(State::CONSOLE);
-        } else {
+        } else if(ecs->GetState() == State::CONSOLE){
             ecs->SwitchState(State::PLAY);
         }
     }
