@@ -154,6 +154,7 @@ void DrawSystem::DrawMainMenu(){
     
     if(mpos.x >= 397 && mpos.x <= 882 && mpos.y >= 301 && mpos.y <= 407){
         ecs->SwitchState(State::MAIN_MENU_PLAY);
+        ecs->points = 0;
         return;
     }
     if(mpos.x >= 397 && mpos.x <= 882 && mpos.y >= 552 && mpos.y <= 659){
